@@ -9,7 +9,8 @@ let hazirSozu: Promise<void> | null = null
 
 function isciAl(): Worker {
   if (isci) return isci
-  isci = new Worker(new URL('./isci.ts', import.meta.url), { type: 'module' })
+  // Klasik Worker: OpenCV.js importScripts ile yüklenir (bkz. isci.ts).
+  isci = new Worker(new URL('./isci.ts', import.meta.url))
   isci.onmessage = (e: MessageEvent<IsYaniti>) => {
     const y = e.data
     if ('hazir' in y) return

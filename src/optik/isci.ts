@@ -1,4 +1,9 @@
-// Web Worker: OpenCV.js'i (≈13 MB) yalnızca burada yükler ve formu ana iş parçacığını dondurmadan okur.
+// Web Worker: OpenCV.js'i (≈15 MB) yalnızca burada yükler ve formu ana iş parçacığını dondurmadan okur.
+//
+// OpenCV.js derlemeye sokulmaz: ?url ile dosya olduğu gibi yayınlanır ve klasik Worker'da importScripts ile
+// yüklenir. Paket dışarıya gerçek bir Promise veriyor; yayın derlemesinin CommonJS dönüştürmesi bunu sahte bir
+// Promise'e çeviriyor ve tarayıcı "Promise.prototype.then called on incompatible receiver" hatası veriyordu.
+import cvAdresi from '@techstark/opencv-js/dist/opencv.js?url'
 import { oku, OkumaHatasi, type QrBilgisi } from './okuyucu.ts'
 
 export type IsIstegi = { id: number; gen: number; yuk: number; rgba: ArrayBuffer; qr: QrBilgisi | null }
@@ -11,13 +16,16 @@ export type IsYaniti =
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let cvSozu: Promise<any> | null = null
 function cvYukle() {
-  cvSozu ??= import('@techstark/opencv-js').then(async (m) => {
+  cvSozu ??= (async () => {
+    ;(self as unknown as { importScripts: (u: string) => void }).importScripts(new URL(cvAdresi, self.location.href).href)
+    // UMD sarmalayıcı Worker'da self.cv'ye OpenCV modülünü veren bir Promise koyar.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let cv: any = m.default ?? m
-    if (cv instanceof Promise) cv = await cv
-    else if (!cv.Mat) await new Promise<void>((r) => (cv.onRuntimeInitialized = r))
-    return cv
-  })
+    let cv: any = (self as any).cv
+    if (cv && typeof cv.then === 'function' && !cv.Mat) cv = await cv
+    if (!cv?.Mat) await new Promise<void>((r) => (cv.onRuntimeInitialized = r))
+    // Modül nesnesi bir sözün sonucu olarak dönülürse "thenable" sanılabilir; sarmalayıp dön.
+    return { cv }
+  })()
   return cvSozu
 }
 
@@ -36,9 +44,10 @@ kapsam.onmessage = async (e: MessageEvent<IsIstegi | 'hazirla'>) => {
     return
   }
   const { id, gen, yuk, rgba, qr } = e.data
-  let cv
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let cv: any
   try {
-    cv = await cvYukle()
+    cv = (await cvYukle()).cv
   } catch (h) {
     cvSozu = null
     kapsam.postMessage({ id, tamam: false, hata: `Okuyucu yüklenemedi: ${String((h as Error)?.message ?? h)}`, beklenmedik: true })
