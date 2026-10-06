@@ -207,7 +207,7 @@ export default function UygulamaSayfasi({ id }: { id: number }) {
       )}
 
       <div className="tablo-kap">
-        <table className="tablo">
+        <table className="tablo kartlasan">
           <thead>
             <tr>
               <th>No</th>
@@ -224,21 +224,21 @@ export default function UygulamaSayfasi({ id }: { id: number }) {
               const ozet = ogrenciOzeti(o.id)
               return (
                 <tr key={o.id} className={o.id === secili ? 'secili-satir' : o.aktif ? '' : 'pasif-satir'}>
-                  <td>{o.okul_no}</td>
-                  <td>
+                  <td className="hucre-no">{o.okul_no}</td>
+                  <td className="hucre-ad">
                     <a href={`#/karne/${o.id}`}>{o.ad_soyad}</a>
                   </td>
                   {ozet ? (
                     <>
-                      <td className="sayi">{ozet.dogru}</td>
-                      <td className="sayi">{ozet.yanlis}</td>
-                      <td className="sayi">{ozet.bos}</td>
-                      <td className="sayi">
+                      <td className="sayi" data-etiket="D">{ozet.dogru}</td>
+                      <td className="sayi" data-etiket="Y">{ozet.yanlis}</td>
+                      <td className="sayi" data-etiket="B">{ozet.bos}</td>
+                      <td className="sayi" data-etiket="Net">
                         <strong>{netYaz(ozet.net)}</strong>
                       </td>
                     </>
                   ) : (
-                    <td colSpan={4} className="soluk kucuk">
+                    <td colSpan={4} className="soluk kucuk hucre-durum">
                       girilmedi
                     </td>
                   )}

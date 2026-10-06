@@ -120,7 +120,7 @@ export default function TopluEkle({
         Yanlış okunan numara ya da adı burada düzeltebilir, eklemek istemediğiniz satırın işaretini kaldırabilirsiniz.
       </p>
       <div className="tablo-kap">
-        <table className="tablo">
+        <table className="tablo kartlasan">
           <thead>
             <tr>
               <th></th>
@@ -132,14 +132,14 @@ export default function TopluEkle({
           <tbody>
             {satirlar.map((s, i) => (
               <tr key={i} className={s.secili ? '' : 'pasif-satir'}>
-                <td>
+                <td className="hucre-sec">
                   <input
                     type="checkbox"
                     checked={s.secili}
                     onChange={(e) => degistir(i, { secili: e.target.checked })}
                   />
                 </td>
-                <td>
+                <td className="hucre-no">
                   <input
                     className="no-girdi"
                     inputMode="numeric"
@@ -147,10 +147,10 @@ export default function TopluEkle({
                     onChange={(e) => degistir(i, { okul_no: e.target.value.replace(/\D/g, '') })}
                   />
                 </td>
-                <td>
+                <td className="hucre-ad">
                   <input value={s.ad_soyad} onChange={(e) => degistir(i, { ad_soyad: e.target.value })} />
                 </td>
-                <td>
+                <td className="hucre-durum">
                   <span className={`etiket etiket-${durumlar[i]}`}>{DURUM_METNI[durumlar[i]]}</span>
                 </td>
               </tr>

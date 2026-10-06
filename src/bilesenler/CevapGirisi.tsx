@@ -40,9 +40,13 @@ export default function CevapGirisi({
   const [metin, setMetin] = useState(ilkIsaretler ? isaretlerdenMetin(ilkIsaretler) : '')
   const [bekliyor, setBekliyor] = useState(false)
   const kutu = useRef<HTMLInputElement>(null)
+  const panel = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    kutu.current?.focus()
+    // Panel listenin altından açılmış olabilir; görünür hâle getir.
+    panel.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    // Dokunmatik ekranda klavye açılıp şıkları kapatmasın diye kutuya otomatik odaklanılmaz.
+    if (!window.matchMedia('(pointer: coarse)').matches) kutu.current?.focus({ preventScroll: true })
   }, [])
 
   const girilen = metindenIsaretler(metin, adet)
@@ -75,7 +79,7 @@ export default function CevapGirisi({
   }
 
   return (
-    <div className="kart cevap-girisi">
+    <div className="kart cevap-girisi" ref={panel}>
       <div className="baslik-satiri">
         <div>
           <h2>
@@ -106,7 +110,8 @@ export default function CevapGirisi({
       </label>
       <p className="soluk kucuk">
         {eksik > 0 ? `${girilen.length} / ${adet} soru girildi; kalan ${eksik} soru boş sayılacak.` : `${adet} sorunun hepsi girildi.`}{' '}
-        Enter: kaydet{sonrakiVar ? ' ve sıradaki öğrenciye geç' : ''}.
+        <span className="masaustu">Enter: kaydet{sonrakiVar ? ' ve sıradaki öğrenciye geç' : ''}.</span>
+        <span className="mobil">Telefonda şıklara dokunmanız daha kolay; seçili şıkka yeniden dokunursanız soru boş olur.</span>
       </p>
 
       <div className="soru-izgara">
@@ -137,13 +142,21 @@ export default function CevapGirisi({
         ))}
       </div>
 
-      <div className="dugmeler">
+      <div className="dugmeler kayit-cubugu">
+        <span className="mobil mobil-ozet">
+          <b className="metin-dogru">{ozet.dogru}D</b> <b className="metin-yanlis">{ozet.yanlis}Y</b>{' '}
+          <b className="soluk">{ozet.bos}B</b> · <b>{netYaz(ozet.net)}</b>
+        </span>
         {sonrakiVar && (
           <button onClick={() => gonder(true)} disabled={bekliyor}>
-            Kaydet ve sıradaki
+            Kaydet ve sıradaki →
           </button>
         )}
-        <button className={sonrakiVar ? 'ikincil' : ''} onClick={() => gonder(false)} disabled={bekliyor}>
+        <button
+          className={sonrakiVar ? 'ikincil kaydet-yalniz' : 'kaydet-yalniz'}
+          onClick={() => gonder(false)}
+          disabled={bekliyor}
+        >
           Kaydet
         </button>
         <button className="ikincil" onClick={vazgec}>

@@ -794,3 +794,227 @@ kbd {
     break-inside: avoid;
   }
 }
+
+/* =====================================================================
+   Telefon uyumu
+   ===================================================================== */
+.mobil {
+  display: none;
+}
+.metin-dogru {
+  color: var(--basari);
+}
+.metin-yanlis {
+  color: var(--tehlike);
+}
+.cevap-girisi {
+  scroll-margin-top: 64px; /* yapışkan üst çubuğun altında kalmasın */
+}
+.ust-cubuk {
+  padding-top: max(10px, env(safe-area-inset-top));
+  padding-left: max(16px, env(safe-area-inset-left));
+  padding-right: max(16px, env(safe-area-inset-right));
+}
+html {
+  -webkit-text-size-adjust: 100%;
+}
+a,
+button,
+label {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Dokunmatik ekranda parmakla rahat basılacak büyüklük */
+@media (pointer: coarse) {
+  button,
+  .dugme-gibi {
+    min-height: 44px;
+  }
+  button.bag {
+    min-height: 40px;
+    padding: 8px 10px;
+  }
+  .kucuk-dugme {
+    min-height: 38px;
+  }
+  input[type='checkbox'] {
+    width: 22px;
+    height: 22px;
+  }
+}
+
+@media (max-width: 640px) {
+  .masaustu {
+    display: none;
+  }
+  .mobil {
+    display: inline;
+  }
+  h1 {
+    font-size: 1.3rem;
+  }
+  .icerik {
+    padding: 14px 12px 40px;
+  }
+  .kart {
+    padding: 14px 12px;
+  }
+  textarea {
+    font-size: 16px; /* iOS 16px altındaki kutularda sayfayı yakınlaştırıyor */
+  }
+  .ust-cubuk {
+    flex-wrap: wrap;
+  }
+  .logo {
+    font-size: 0.95rem;
+  }
+  .ad-dugmesi {
+    max-width: 150px;
+  }
+  .ad-formu input {
+    width: 130px;
+  }
+  .baslik-satiri > .dugmeler {
+    width: 100%;
+  }
+  .ozet-serit button {
+    margin-left: 0;
+    width: 100%;
+  }
+  .kapsam-secimi {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .kapsam-secimi select {
+    width: 100%;
+  }
+  .basari-ust {
+    flex-direction: column;
+    gap: 2px;
+  }
+  .liste-satiri {
+    padding: 12px;
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .no-girdi {
+    max-width: 96px;
+  }
+
+  /* Tablolar kart görünümüne geçer: her satır bir kart, hücreler yan yana akar. */
+  .kartlasan,
+  .kartlasan tbody {
+    display: block;
+  }
+  .kartlasan thead {
+    display: none;
+  }
+  .kartlasan tr {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 14px;
+    padding: 12px;
+    border-bottom: 1px solid var(--cizgi);
+  }
+  .kartlasan tr:last-child {
+    border-bottom: none;
+  }
+  .kartlasan td {
+    display: block;
+    border: none;
+    padding: 0;
+    text-align: left !important;
+  }
+  .kartlasan td[data-etiket]::before {
+    content: attr(data-etiket) ' ';
+    color: var(--soluk);
+    font-size: 0.8rem;
+    font-weight: 400;
+  }
+  .kartlasan .hucre-no {
+    color: var(--soluk);
+    font-variant-numeric: tabular-nums;
+    min-width: 2.5em;
+  }
+  .kartlasan .hucre-ad {
+    flex: 1 1 140px;
+    font-weight: 600;
+  }
+  .kartlasan .hucre-ad input {
+    font-weight: 400;
+  }
+  .kartlasan .hucre-tam,
+  .kartlasan .hucre-durum,
+  .kartlasan .islemler {
+    flex-basis: 100%;
+  }
+  .kartlasan .islemler {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    white-space: normal;
+  }
+  .kartlasan .islemler > * {
+    margin-left: 0;
+  }
+  .kartlasan .islemler > .bag:first-child {
+    padding-left: 0;
+  }
+  .kartlasan .hucre-durum.soluk {
+    flex-basis: auto;
+  }
+  .onay {
+    width: 100%;
+  }
+
+  /* Cevap girişi: tek sütun, büyük şık düğmeleri, kaydet çubuğu ekranın altına yapışık */
+  .cevap-girisi .baslik-satiri {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .cevap-girisi .ozet-kutulari {
+    display: none; /* özet alttaki kaydet çubuğunda gösterilir */
+  }
+  .soru-izgara {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+  .soru-satiri {
+    gap: 6px;
+  }
+  .sik {
+    flex: 1;
+    height: 46px;
+    font-size: 1.05rem;
+  }
+  .sik.gecersiz {
+    flex: 0 0 40px;
+  }
+  .kayit-cubugu {
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin: 4px -12px -14px;
+    padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+    background: var(--kart);
+    border-top: 1px solid var(--cizgi);
+    border-radius: 0 0 var(--yaricap) var(--yaricap);
+    box-shadow: 0 -6px 16px rgb(0 0 0 / 0.08);
+  }
+  .kayit-cubugu .mobil-ozet {
+    grid-column: 1 / -1;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+  .kayit-cubugu > button:first-of-type:not(.kaydet-yalniz) {
+    grid-column: 1 / -1;
+  }
+  .kayit-cubugu > button {
+    width: 100%;
+  }
+}

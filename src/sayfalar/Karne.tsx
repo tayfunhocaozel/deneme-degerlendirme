@@ -186,7 +186,7 @@ export default function Karne({ id }: { id: number }) {
           <section className="bolum">
             <h2 className="bolum-basligi">Deneme sonuçları</h2>
             <div className="tablo-kap">
-              <table className="tablo">
+              <table className="tablo kartlasan">
                 <thead>
                   <tr>
                     <th>Deneme</th>
@@ -201,18 +201,18 @@ export default function Karne({ id }: { id: number }) {
                 <tbody>
                   {denemeSonuclari.map((d) => (
                     <tr key={d.uygulama.id}>
-                      <td>
+                      <td className="hucre-tam">
                         <a href={`#/uygulama/${d.uygulama.id}`}>{d.deneme?.deneme_kodu}</a>
                         <span className="soluk kucuk"> · {tarihYaz(d.uygulama.tarih)}</span>
                       </td>
-                      <td className="sayi">{d.dogru}</td>
-                      <td className="sayi">{d.yanlis}</td>
-                      <td className="sayi">{d.bos}</td>
-                      <td className="sayi">
+                      <td className="sayi" data-etiket="D">{d.dogru}</td>
+                      <td className="sayi" data-etiket="Y">{d.yanlis}</td>
+                      <td className="sayi" data-etiket="B">{d.bos}</td>
+                      <td className="sayi" data-etiket="Net">
                         <strong>{netYaz(d.net)}</strong>
                       </td>
-                      <td className="sayi soluk">{netYaz(d.sinifNet)}</td>
-                      <td className="sayi soluk">
+                      <td className="sayi soluk" data-etiket="Sınıf">{netYaz(d.sinifNet)}</td>
+                      <td className="sayi soluk" data-etiket="Sıra">
                         {d.sira}/{d.kisi}
                       </td>
                     </tr>

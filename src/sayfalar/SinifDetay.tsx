@@ -234,7 +234,7 @@ function OgrenciTablosu({
 
   return (
     <div className="tablo-kap">
-      <table className="tablo">
+      <table className="tablo kartlasan">
         <thead>
           <tr>
             <th>Okul no</th>
@@ -246,7 +246,7 @@ function OgrenciTablosu({
           {ogrenciler.map((o) =>
             duzenlenen === o.id ? (
               <tr key={o.id}>
-                <td>
+                <td className="hucre-no">
                   <input
                     className="no-girdi"
                     inputMode="numeric"
@@ -254,7 +254,7 @@ function OgrenciTablosu({
                     onChange={(e) => setNo(e.target.value.replace(/\D/g, ''))}
                   />
                 </td>
-                <td>
+                <td className="hucre-ad">
                   <input value={ad} onChange={(e) => setAd(e.target.value)} />
                 </td>
                 <td className="islemler">
@@ -275,8 +275,8 @@ function OgrenciTablosu({
               </tr>
             ) : (
               <tr key={o.id} className={o.aktif ? '' : 'pasif-satir'}>
-                <td>{o.okul_no}</td>
-                <td>
+                <td className="hucre-no">{o.okul_no}</td>
+                <td className="hucre-ad">
                   <a href={`#/karne/${o.id}`}>{o.ad_soyad}</a>
                 </td>
                 <td className="islemler">
