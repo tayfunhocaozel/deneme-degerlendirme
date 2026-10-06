@@ -9,6 +9,7 @@
   - Uygulanmış bir denemenin aynı sürümü tekrar gönderilirse fonksiyon reddeder; düzeltme için `surum` artırılmalı.
 - [ ] **Supabase dönüş adresi:** Authentication → URL Configuration → Site URL `https://tayfunhocaozel.github.io/deneme-degerlendirme/`; Redirect URLs'e bu adres ve `http://localhost:5173/deneme-degerlendirme/`.
 - [ ] **İlk öğretmeni davet et:** Authentication → Users → Invite user.
+- [ ] **Test denemesini sil:** `TEST-D04` (veritabanında id 3) yalnızca geliştirme için eklendi. Gerçek denemeler gelince, ona bağlı uygulamalar silinip deneme kaldırılacak: `delete from uygulamalar where deneme_id = 3; delete from denemeler where id = 3;`
 - [ ] Telefon türü (Android / iPhone) öğrenilecek; optik okuma aşamasında gerekli.
 
 ## Tamamlananlar
