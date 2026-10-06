@@ -15,3 +15,4 @@
 - [x] Uygulama ilk sürümü (giriş, sınıflar, öğrenci ekleme tek tek / Excel'den) GitHub Pages'te yayında: https://tayfunhocaozel.github.io/deneme-degerlendirme/ 2026-10-06
 - [x] İlk öğretmen hesabı açıldı ve giriş yapıldı. 2026-10-06
 - [x] Soru üretim tarafı denemeleri `deneme_aktar` ile gönderiyor; 8-D01…8-D04 yüklendi, test denemesi silindi. 2026-10-06
+- [x] Deneme uygulama, elle cevap girişi, öğrenci karnesi ve telefon uyumu yayında; kullanıcı telefonda doğruladı. 2026-10-06
