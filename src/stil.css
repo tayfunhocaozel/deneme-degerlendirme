@@ -1371,14 +1371,11 @@ label {
   background: #000;
   border-radius: var(--yaricap);
   overflow: hidden;
-  aspect-ratio: 3 / 4;
-  max-height: 70vh;
   width: 100%;
-}
-@media (orientation: landscape) {
-  .kamera-cerceve {
-    aspect-ratio: 16 / 9;
-  }
+  /* Üst çubuk ve başlık dışındaki alanı doldurur; düğmeler görüntünün üstünde olduğu için hep görünür. */
+  height: calc(100dvh - 150px);
+  min-height: 320px;
+  max-height: 820px;
 }
 .kamera-video {
   width: 100%;
@@ -1437,11 +1434,45 @@ label {
   font-weight: 700;
 }
 .kamera-durum {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
   margin: 0;
-  padding: 10px 12px;
+  padding: 8px 12px;
   border-radius: 8px;
   font-weight: 600;
   text-align: center;
+  z-index: 2;
+  box-shadow: 0 2px 10px rgb(0 0 0 / 0.25);
+}
+.kamera-alt {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 14px calc(14px + env(safe-area-inset-bottom));
+  background: linear-gradient(transparent, rgb(0 0 0 / 0.55));
+  z-index: 2;
+}
+.kamera-yan {
+  justify-self: start;
+  background: rgb(255 255 255 / 0.9);
+  color: #1b2433;
+  border-color: transparent;
+}
+.kamera-yan[aria-pressed='true'] {
+  background: #ffd84d;
+}
+.kamera-yan-bos {
+  display: block;
+}
+.okuyucu-durumu {
+  margin: 0;
 }
 .durum-bilgi {
   background: var(--zemin);
@@ -1465,10 +1496,21 @@ label {
   justify-content: center;
 }
 .deklansor {
-  min-width: 140px;
-  min-height: 52px;
-  font-size: 1.1rem;
-  border-radius: 99px;
+  width: 76px;
+  height: 76px;
+  min-height: 76px;
+  padding: 0;
+  border-radius: 50%;
+  font-size: 1.05rem;
+  background: #fff;
+  color: #1b2433;
+  border: 5px solid rgb(255 255 255 / 0.5);
+  background-clip: padding-box;
+  box-shadow: 0 0 0 2px rgb(0 0 0 / 0.2);
+}
+.deklansor:hover:not(:disabled) {
+  background: #f0f0f0;
+  border-color: rgb(255 255 255 / 0.5);
 }
 .optik-onay,
 .optik-sonuc {
@@ -1640,8 +1682,5 @@ label {
 @media (max-width: 640px) {
   .optik-izgara {
     grid-template-columns: repeat(5, 1fr);
-  }
-  .kamera-cerceve {
-    max-height: 62vh;
   }
 }

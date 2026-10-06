@@ -15,6 +15,7 @@ const KACIRMA_TOLERANSI = 2 // QR bir iki karede kaçırılırsa geçmiş sıfı
 const EN_COK_BEKLEME_MS = 2000 // QR bu kadar süre görünür kalırsa koşullar sağlanmasa da çek
 
 type Durum = { metin: string; tur: 'bilgi' | 'iyi' | 'uyari' | 'hata' }
+type OkuyucuDurumu = { ad: 'yukleniyor'; baslangic: number } | { ad: 'hazir'; sure: number } | { ad: 'hata'; mesaj: string }
 
 // Kamera önizlemesi, otomatik yakalama ve deklanşör. Okuma başarılı olunca `okundu` çağrılır.
 export default function KameraEkrani({ okundu }: { okundu: (s: OkumaSonucu) => void }) {
@@ -23,25 +24,41 @@ export default function KameraEkrani({ okundu }: { okundu: (s: OkumaSonucu) => v
   const sonQr = useRef<QrBilgisi | null>(null)
   const isleniyor = useRef(false)
   const bekleme = useRef(0) // hatadan sonra otomatik yakalamayı kısa süre durdur
+  const sonKare = useRef<ImageData | null>(null) // okunamayan kare: öğretmen isterse telefona indirir
   const [durum, setDurum] = useState<Durum>({ metin: 'Kamera açılıyor…', tur: 'bilgi' })
-  const [hazir, setHazir] = useState(false)
+  const [kameraHazir, setKameraHazir] = useState(false)
   const [yerlesik, setYerlesik] = useState<boolean | null>(null)
   const [fenerVar, setFenerVar] = useState(false)
   const [fenerAcik, setFenerAcik] = useState(false)
   const [okuyor, setOkuyor] = useState(false)
-  const [okuyucuHazir, setOkuyucuHazir] = useState(false)
+  const [okuyucu, setOkuyucu] = useState<OkuyucuDurumu>({ ad: 'yukleniyor', baslangic: Date.now() })
+  const [, setTik] = useState(0) // yükleme süresini saniye saniye göstermek için
   const [kameraHatasi, setKameraHatasi] = useState('')
-  const sonKare = useRef<ImageData | null>(null) // okunamayan kare: öğretmen isterse telefona indirir
   const [indirilebilir, setIndirilebilir] = useState(false)
   // Döngü, okuyucunun hazır olup olmadığını güncel okusun diye.
-  const okuyucuHazirRef = useRef(false)
-  okuyucuHazirRef.current = okuyucuHazir
+  const okuyucuHazir = useRef(false)
+  okuyucuHazir.current = okuyucu.ad === 'hazir'
+
+  function okuyucuYukle() {
+    const baslangic = Date.now()
+    setOkuyucu({ ad: 'yukleniyor', baslangic })
+    okuyucuyuHazirla()
+      .then(() => setOkuyucu({ ad: 'hazir', sure: Date.now() - baslangic }))
+      .catch((h: Error) => setOkuyucu({ ad: 'hata', mesaj: h.message }))
+  }
+
+  useEffect(() => {
+    if (okuyucu.ad !== 'yukleniyor') return
+    const z = setInterval(() => setTik((t) => t + 1), 1000)
+    return () => clearInterval(z)
+  }, [okuyucu.ad])
 
   async function yakala(qr: QrBilgisi | null) {
     if (isleniyor.current || !video.current) return
     isleniyor.current = true
     setOkuyor(true)
-    setDurum({ metin: 'Form okunuyor…', tur: 'bilgi' })
+    setIndirilebilir(false)
+    setDurum({ metin: okuyucuHazir.current ? 'Form okunuyor…' : 'Okuyucu yükleniyor; yüklenince form okunacak…', tur: 'bilgi' })
     try {
       const kare = kareYakala(video.current)
       // Worker'a aktarılınca veri boşalır; sorun bildirmek için bir kopyası tutulur.
@@ -52,7 +69,7 @@ export default function KameraEkrani({ okundu }: { okundu: (s: OkumaSonucu) => v
     } catch (h) {
       setDurum({ metin: (h as Error).message, tur: 'hata' })
       setIndirilebilir(!!sonKare.current)
-      bekleme.current = Date.now() + 2500
+      bekleme.current = Date.now() + 3000
     } finally {
       isleniyor.current = false
       setOkuyor(false)
@@ -65,9 +82,7 @@ export default function KameraEkrani({ okundu }: { okundu: (s: OkumaSonucu) => v
     const gecmis: { x: number; y: number; s: number; n: number }[] = []
     let kacirma = 0
     let ilkGorulme = 0
-    okuyucuyuHazirla()
-      .then(() => !iptal && setOkuyucuHazir(true))
-      .catch(() => !iptal && setDurum({ metin: 'Okuyucu yüklenemedi. İnternet bağlantınızı kontrol edip sayfayı yenileyin.', tur: 'hata' }))
+    okuyucuYukle()
 
     async function dongu() {
       if (iptal || !video.current) return
@@ -96,7 +111,7 @@ export default function KameraEkrani({ okundu }: { okundu: (s: OkumaSonucu) => v
           const net = gecmis[gecmis.length - 1].n >= 0.6 * enNet
           const sureDoldu = Date.now() - ilkGorulme > EN_COK_BEKLEME_MS
           if (s / SABLON.qr.kod_alani.kenar < EN_AZ_PXMM) setDurum({ metin: 'Form küçük görünüyor: biraz yaklaşın.', tur: 'uyari' })
-          else if (!okuyucuHazirRef.current) setDurum({ metin: 'Okuyucu yükleniyor, bir saniye…', tur: 'bilgi' })
+          else if (!okuyucuHazir.current) setDurum({ metin: 'Form bulundu. Okuyucu yükleniyor…', tur: 'uyari' })
           else if ((sabit && net) || sureDoldu) {
             gecmis.length = 0
             ilkGorulme = 0
@@ -115,9 +130,9 @@ export default function KameraEkrani({ okundu }: { okundu: (s: OkumaSonucu) => v
         kamera.current = await kameraAc(video.current!)
         if (iptal) return kameraKapat(kamera.current)
         setFenerVar(kamera.current.fenerVar)
-        setHazir(true)
+        setKameraHazir(true)
         if (yer) dongu()
-        else setDurum({ metin: 'Formu çerçeveye alıp deklanşöre basın.', tur: 'bilgi' })
+        else setDurum({ metin: 'Formu çerçeveye alıp “Çek”e basın.', tur: 'bilgi' })
       } catch (h) {
         setKameraHatasi((h as Error).message)
       }
@@ -171,6 +186,13 @@ export default function KameraEkrani({ okundu }: { okundu: (s: OkumaSonucu) => v
       </div>
     )
 
+  const okuyucuMetni =
+    okuyucu.ad === 'yukleniyor'
+      ? `Okuyucu yükleniyor… ${Math.round((Date.now() - okuyucu.baslangic) / 1000)} sn (ilk açılışta biraz sürebilir)`
+      : okuyucu.ad === 'hazir'
+        ? `Okuyucu hazır (${(okuyucu.sure / 1000).toLocaleString('tr-TR', { maximumFractionDigits: 1 })} sn)`
+        : okuyucu.mesaj
+
   return (
     <div className="kamera-kap">
       <div className="kamera-cerceve">
@@ -181,21 +203,36 @@ export default function KameraEkrani({ okundu }: { okundu: (s: OkumaSonucu) => v
           <span className="kose ka-sol" />
           <span className="kose ka-sag" />
         </div>
-        {okuyor && <div className="kamera-perde">Okunuyor…</div>}
-      </div>
-      <p className={`kamera-durum durum-${durum.tur}`} role="status">
-        {durum.metin}
-      </p>
-      <div className="kamera-dugmeler">
-        {fenerVar && (
-          <button className="ikincil" onClick={fenerDegistir} aria-pressed={fenerAcik}>
-            {fenerAcik ? 'Feneri kapat' : 'Fener'}
+        <p className={`kamera-durum durum-${durum.tur}`} role="status">
+          {durum.metin}
+        </p>
+        {okuyor && <div className="kamera-perde">{okuyucuHazir.current ? 'Okunuyor…' : 'Okuyucu yükleniyor…'}</div>}
+        <div className="kamera-alt">
+          {fenerVar ? (
+            <button className="kamera-yan" onClick={fenerDegistir} aria-pressed={fenerAcik}>
+              {fenerAcik ? 'Fener kapat' : 'Fener'}
+            </button>
+          ) : (
+            <span className="kamera-yan-bos" />
+          )}
+          <button className="deklansor" onClick={() => yakala(sonQr.current)} disabled={!kameraHazir || okuyor}>
+            Çek
           </button>
-        )}
-        <button className="deklansor" onClick={() => yakala(sonQr.current)} disabled={!hazir || okuyor || !okuyucuHazir}>
-          {okuyucuHazir ? 'Çek' : 'Hazırlanıyor…'}
-        </button>
+          <span className="kamera-yan-bos" />
+        </div>
       </div>
+
+      <p className={`okuyucu-durumu ${okuyucu.ad === 'hata' ? 'hata' : 'soluk kucuk'}`}>
+        {okuyucuMetni}
+        {okuyucu.ad === 'hata' && (
+          <>
+            {' '}
+            <button className="bag" onClick={okuyucuYukle}>
+              Yeniden dene
+            </button>
+          </>
+        )}
+      </p>
       {indirilebilir && (
         <p className="kucuk">
           Okunamayan fotoğrafı incelemek için{' '}
@@ -206,9 +243,9 @@ export default function KameraEkrani({ okundu }: { okundu: (s: OkumaSonucu) => v
         </p>
       )}
       <p className="soluk kucuk">
-        Form sabit tutulamazsa “Çek” düğmesine basabilirsiniz. Formun dört köşesindeki siyah kareler ve QR kod kadrajda olsun. Fotoğraf yalnızca bu telefonda işlenir, hiçbir yere
-        gönderilmez.
-        {yerlesik === false && ' Bu tarayıcıda otomatik yakalama yok; deklanşöre basın.'}
+        Formun dört köşesindeki siyah kareler ve QR kod kadrajda olsun. Otomatik çekmezse “Çek”e basın. Fotoğraf yalnızca bu
+        telefonda işlenir, hiçbir yere gönderilmez.
+        {yerlesik === false && ' Bu tarayıcıda otomatik yakalama yok.'}
       </p>
     </div>
   )

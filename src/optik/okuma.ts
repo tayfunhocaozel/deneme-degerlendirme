@@ -29,17 +29,29 @@ function isciAl(): Worker {
 }
 
 // Okuyucuyu (OpenCV) önceden yükler; kamera açılırken çağrılır ki ilk okuma beklemesin.
+const YUKLEME_SINIRI_MS = 90_000
+
 export function okuyucuyuHazirla(): Promise<void> {
-  hazirSozu ??= new Promise((coz, reddet) => {
+  hazirSozu ??= new Promise<void>((coz, reddet) => {
     const w = isciAl()
-    const dinle = (e: MessageEvent<IsYaniti>) => {
-      if ('hazir' in e.data) {
-        w.removeEventListener('message', dinle)
-        coz()
-      }
+    const bitir = (h?: Error) => {
+      clearTimeout(sure)
+      w.removeEventListener('message', dinle)
+      if (h) {
+        hazirSozu = null // bir sonraki denemede yeniden yüklensin
+        reddet(h)
+      } else coz()
     }
+    const dinle = (e: MessageEvent<IsYaniti>) => {
+      if (!('hazir' in e.data)) return
+      bitir(e.data.hazir ? undefined : new Error(`Okuyucu yüklenemedi: ${e.data.hata}`))
+    }
+    const sure = setTimeout(
+      () => bitir(new Error('Okuyucu 90 saniyede yüklenemedi. İnternet bağlantınızı kontrol edip yeniden deneyin.')),
+      YUKLEME_SINIRI_MS,
+    )
     w.addEventListener('message', dinle)
-    w.addEventListener('error', () => reddet(new Error('Okuyucu yüklenemedi.')), { once: true })
+    w.addEventListener('error', (e) => bitir(new Error(`Okuyucu başlatılamadı: ${e.message || 'bilinmeyen hata'}`)), { once: true })
     w.postMessage('hazirla')
   })
   return hazirSozu

@@ -6,6 +6,7 @@ export type IsYaniti =
   | { id: number; tamam: true; sonuc: ReturnType<typeof oku> }
   | { id: number; tamam: false; hata: string; beklenmedik?: boolean }
   | { id: -1; hazir: true }
+  | { id: -1; hazir: false; hata: string }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let cvSozu: Promise<any> | null = null
@@ -24,12 +25,25 @@ const kapsam = self as unknown as { postMessage: (m: IsYaniti, t?: Transferable[
 
 kapsam.onmessage = async (e: MessageEvent<IsIstegi | 'hazirla'>) => {
   if (e.data === 'hazirla') {
-    await cvYukle()
-    kapsam.postMessage({ id: -1, hazir: true })
+    // Yükleme hatası mutlaka ana sayfaya bildirilir; yoksa ekran sonsuza kadar bekler.
+    try {
+      await cvYukle()
+      kapsam.postMessage({ id: -1, hazir: true })
+    } catch (h) {
+      cvSozu = null
+      kapsam.postMessage({ id: -1, hazir: false, hata: String((h as Error)?.message ?? h) })
+    }
     return
   }
   const { id, gen, yuk, rgba, qr } = e.data
-  const cv = await cvYukle()
+  let cv
+  try {
+    cv = await cvYukle()
+  } catch (h) {
+    cvSozu = null
+    kapsam.postMessage({ id, tamam: false, hata: `Okuyucu yüklenemedi: ${String((h as Error)?.message ?? h)}`, beklenmedik: true })
+    return
+  }
   const renkli = new cv.Mat(yuk, gen, cv.CV_8UC4)
   renkli.data.set(new Uint8Array(rgba))
   const gri = new cv.Mat()
