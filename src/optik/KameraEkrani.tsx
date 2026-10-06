@@ -6,7 +6,13 @@ import { SABLON } from './sablon.ts'
 
 const ARALIK_MS = 180
 const EN_AZ_PXMM = 8.5 // formun ~850 px'ten küçük görünmesi okumayı bozar
-const SABIT_KARE = 3
+// Sabitlik yalnızca hareket bulanıklığını önlemek için: köşeler çekilen karede yeniden bulunduğu için
+// tam hareketsizlik gerekmez. Elde tutulan telefonda QR kenarının %4'ü fazla sıkıydı, hiç tetiklenmiyordu.
+const SABIT_KARE = 2
+const SABIT_ESIK = 0.12 // ardışık karelerde QR merkezinin kayması < QR kenarı × 0,12
+const BOYUT_ESIK = 0.1
+const KACIRMA_TOLERANSI = 2 // QR bir iki karede kaçırılırsa geçmiş sıfırlanmaz
+const EN_COK_BEKLEME_MS = 2000 // QR bu kadar süre görünür kalırsa koşullar sağlanmasa da çek
 
 type Durum = { metin: string; tur: 'bilgi' | 'iyi' | 'uyari' | 'hata' }
 
@@ -25,6 +31,8 @@ export default function KameraEkrani({ okundu }: { okundu: (s: OkumaSonucu) => v
   const [okuyor, setOkuyor] = useState(false)
   const [okuyucuHazir, setOkuyucuHazir] = useState(false)
   const [kameraHatasi, setKameraHatasi] = useState('')
+  const sonKare = useRef<ImageData | null>(null) // okunamayan kare: öğretmen isterse telefona indirir
+  const [indirilebilir, setIndirilebilir] = useState(false)
   // Döngü, okuyucunun hazır olup olmadığını güncel okusun diye.
   const okuyucuHazirRef = useRef(false)
   okuyucuHazirRef.current = okuyucuHazir
@@ -36,10 +44,14 @@ export default function KameraEkrani({ okundu }: { okundu: (s: OkumaSonucu) => v
     setDurum({ metin: 'Form okunuyor…', tur: 'bilgi' })
     try {
       const kare = kareYakala(video.current)
+      // Worker'a aktarılınca veri boşalır; sorun bildirmek için bir kopyası tutulur.
+      sonKare.current = new ImageData(new Uint8ClampedArray(kare.data), kare.width, kare.height)
       const sonuc = await formuOku(kare, qr)
+      sonKare.current = null
       okundu(sonuc)
     } catch (h) {
       setDurum({ metin: (h as Error).message, tur: 'hata' })
+      setIndirilebilir(!!sonKare.current)
       bekleme.current = Date.now() + 2500
     } finally {
       isleniyor.current = false
@@ -51,6 +63,8 @@ export default function KameraEkrani({ okundu }: { okundu: (s: OkumaSonucu) => v
     let iptal = false
     let zamanlayici = 0
     const gecmis: { x: number; y: number; s: number; n: number }[] = []
+    let kacirma = 0
+    let ilkGorulme = 0
     okuyucuyuHazirla()
       .then(() => !iptal && setOkuyucuHazir(true))
       .catch(() => !iptal && setDurum({ metin: 'Okuyucu yüklenemedi. İnternet bağlantınızı kontrol edip sayfayı yenileyin.', tur: 'hata' }))
@@ -61,9 +75,14 @@ export default function KameraEkrani({ okundu }: { okundu: (s: OkumaSonucu) => v
         const qr = await qrAra(video.current)
         sonQr.current = qr
         if (!qr) {
-          gecmis.length = 0
-          setDurum({ metin: 'QR aranıyor… Formu çerçeveye alın.', tur: 'bilgi' })
+          if (++kacirma > KACIRMA_TOLERANSI) {
+            gecmis.length = 0
+            ilkGorulme = 0
+            setDurum({ metin: 'QR aranıyor… Formu çerçeveye alın.', tur: 'bilgi' })
+          }
         } else {
+          kacirma = 0
+          if (!ilkGorulme) ilkGorulme = Date.now()
           const s = Math.hypot(qr.kose[1][0] - qr.kose[0][0], qr.kose[1][1] - qr.kose[0][1])
           const x = qr.kose.reduce((t, p) => t + p[0], 0) / 4
           const y = qr.kose.reduce((t, p) => t + p[1], 0) / 4
@@ -71,15 +90,18 @@ export default function KameraEkrani({ okundu }: { okundu: (s: OkumaSonucu) => v
           if (gecmis.length > 8) gecmis.shift()
           const son = gecmis.slice(-SABIT_KARE)
           const sabit =
-            son.length === SABIT_KARE && son.every((g) => Math.hypot(g.x - x, g.y - y) < 0.04 * s && Math.abs(g.s - s) < 0.04 * s)
+            son.length === SABIT_KARE &&
+            son.every((g) => Math.hypot(g.x - x, g.y - y) < SABIT_ESIK * s && Math.abs(g.s - s) < BOYUT_ESIK * s)
           const enNet = Math.max(...gecmis.map((g) => g.n))
+          const net = gecmis[gecmis.length - 1].n >= 0.6 * enNet
+          const sureDoldu = Date.now() - ilkGorulme > EN_COK_BEKLEME_MS
           if (s / SABLON.qr.kod_alani.kenar < EN_AZ_PXMM) setDurum({ metin: 'Form küçük görünüyor: biraz yaklaşın.', tur: 'uyari' })
-          else if (!sabit) setDurum({ metin: 'Form bulundu, sabit tutun…', tur: 'iyi' })
-          else if (gecmis[gecmis.length - 1].n < 0.75 * enNet) setDurum({ metin: 'Netleşmesi bekleniyor…', tur: 'iyi' })
-          else if (okuyucuHazirRef.current) {
+          else if (!okuyucuHazirRef.current) setDurum({ metin: 'Okuyucu yükleniyor, bir saniye…', tur: 'bilgi' })
+          else if ((sabit && net) || sureDoldu) {
             gecmis.length = 0
+            ilkGorulme = 0
             await yakala(qr)
-          } else setDurum({ metin: 'Okuyucu yükleniyor, bir saniye…', tur: 'bilgi' })
+          } else setDurum({ metin: 'Form bulundu, sabit tutun…', tur: 'iyi' })
         }
       }
       zamanlayici = window.setTimeout(dongu, ARALIK_MS)
@@ -108,6 +130,28 @@ export default function KameraEkrani({ okundu }: { okundu: (s: OkumaSonucu) => v
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // Okunamayan kareyi telefona JPEG olarak indirir (hiçbir yere gönderilmez).
+  function kareyiIndir() {
+    const k = sonKare.current
+    if (!k) return
+    const t = document.createElement('canvas')
+    t.width = k.width
+    t.height = k.height
+    t.getContext('2d')!.putImageData(k, 0, 0)
+    t.toBlob(
+      (b) => {
+        if (!b) return
+        const a = document.createElement('a')
+        a.href = URL.createObjectURL(b)
+        a.download = `okunamayan-form-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.jpg`
+        a.click()
+        setTimeout(() => URL.revokeObjectURL(a.href), 5000)
+      },
+      'image/jpeg',
+      0.95,
+    )
+  }
 
   async function fenerDegistir() {
     if (!kamera.current) return
@@ -152,8 +196,17 @@ export default function KameraEkrani({ okundu }: { okundu: (s: OkumaSonucu) => v
           {okuyucuHazir ? 'Çek' : 'Hazırlanıyor…'}
         </button>
       </div>
+      {indirilebilir && (
+        <p className="kucuk">
+          Okunamayan fotoğrafı incelemek için{' '}
+          <button className="bag" onClick={kareyiIndir}>
+            telefona indirin
+          </button>
+          .
+        </p>
+      )}
       <p className="soluk kucuk">
-        Formun dört köşesindeki siyah kareler ve QR kod kadrajda olsun. Fotoğraf yalnızca bu telefonda işlenir, hiçbir yere
+        Form sabit tutulamazsa “Çek” düğmesine basabilirsiniz. Formun dört köşesindeki siyah kareler ve QR kod kadrajda olsun. Fotoğraf yalnızca bu telefonda işlenir, hiçbir yere
         gönderilmez.
         {yerlesik === false && ' Bu tarayıcıda otomatik yakalama yok; deklanşöre basın.'}
       </p>
