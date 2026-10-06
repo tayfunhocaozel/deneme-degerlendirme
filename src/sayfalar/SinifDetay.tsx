@@ -4,6 +4,7 @@ import type { Ogrenci, Sinif } from '../veritabani'
 import SinifFormu from '../bilesenler/SinifFormu'
 import TopluEkle from '../bilesenler/TopluEkle'
 import Onay from '../bilesenler/Onay'
+import SinifDenemeleri from '../bilesenler/SinifDenemeleri'
 import { git } from '../yonlendirme'
 
 const numaraSirasi = (a: Ogrenci, b: Ogrenci) =>
@@ -112,6 +113,10 @@ export default function SinifDetay({ id }: { id: number }) {
       )}
 
       {hata && <p className="hata">{hata}</p>}
+
+      <SinifDenemeleri sinifId={id} sinifDuzeyi={sinif.sinif_duzeyi} ogrenciSayisi={aktifler.length} />
+
+      <h2 className="bolum-basligi">Öğrenciler</h2>
       {bilgi && <p className="basari">{bilgi}</p>}
 
       {mod === 'toplu' ? (
@@ -271,7 +276,9 @@ function OgrenciTablosu({
             ) : (
               <tr key={o.id} className={o.aktif ? '' : 'pasif-satir'}>
                 <td>{o.okul_no}</td>
-                <td>{o.ad_soyad}</td>
+                <td>
+                  <a href={`#/karne/${o.id}`}>{o.ad_soyad}</a>
+                </td>
                 <td className="islemler">
                   <button
                     className="bag"

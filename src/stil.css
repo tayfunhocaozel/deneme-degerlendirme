@@ -440,3 +440,357 @@ button.bag.tehlike:hover:not(:disabled) {
     padding: 8px;
   }
 }
+
+/* --- Bölümler --- */
+.bolum {
+  margin-bottom: 28px;
+}
+.bolum .baslik-satiri {
+  margin-bottom: 10px;
+  align-items: center;
+}
+.bolum-basligi {
+  margin: 8px 0 10px;
+}
+h3 {
+  font-size: 1rem;
+  margin: 0 0 4px;
+}
+.uyari {
+  color: var(--uyari);
+  background: var(--uyari-acik);
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin: 0;
+}
+.liste {
+  display: flex;
+  flex-direction: column;
+  background: var(--kart);
+  border: 1px solid var(--cizgi);
+  border-radius: var(--yaricap);
+  overflow: hidden;
+}
+.liste-satiri {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--cizgi);
+  text-decoration: none;
+  color: var(--metin);
+}
+.liste-satiri:last-child {
+  border-bottom: none;
+}
+.liste-satiri:hover {
+  background: var(--ana-acik);
+}
+.liste-ana {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* --- Üst çubukta ad --- */
+.ad-dugmesi {
+  color: var(--soluk);
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ad-formu {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.ad-formu input {
+  padding: 4px 8px;
+  width: 180px;
+}
+
+/* --- Cevap girişi --- */
+.ozet-serit {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 24px;
+  margin-bottom: 16px;
+}
+.ozet-serit button {
+  margin-left: auto;
+}
+.cevap-girisi {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-color: var(--ana);
+  box-shadow: 0 4px 18px rgb(29 78 216 / 0.1);
+}
+.cevap-girisi .baslik-satiri {
+  margin-bottom: 0;
+}
+.ozet-kutulari {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.ozet-kutu {
+  font-weight: 700;
+  font-size: 0.9rem;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-variant-numeric: tabular-nums;
+}
+.ozet-kutu.dogru {
+  background: var(--basari-acik);
+  color: var(--basari);
+}
+.ozet-kutu.yanlis {
+  background: var(--tehlike-acik);
+  color: var(--tehlike);
+}
+.ozet-kutu.bos {
+  background: var(--zemin);
+  color: var(--soluk);
+}
+.ozet-kutu.net {
+  background: var(--ana-acik);
+  color: var(--ana);
+}
+.hizli-giris {
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 1.3rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+}
+kbd {
+  font-family: ui-monospace, Consolas, monospace;
+  background: var(--zemin);
+  border: 1px solid var(--cizgi);
+  border-radius: 4px;
+  padding: 0 5px;
+}
+.soru-izgara {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 4px 16px;
+}
+.soru-satiri {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.soru-satiri.girilmedi .soru-no {
+  color: var(--soluk);
+}
+.soru-no {
+  width: 26px;
+  text-align: right;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  margin-right: 4px;
+}
+.sik {
+  width: 36px;
+  height: 34px;
+  padding: 0;
+  background: var(--kart);
+  color: var(--metin);
+  border: 1px solid var(--cizgi);
+  font-weight: 600;
+}
+.sik:hover:not(:disabled) {
+  background: var(--ana-acik);
+  border-color: var(--ana);
+}
+.sik.secili,
+.sik.secili:hover:not(:disabled) {
+  background: var(--ana);
+  border-color: var(--ana);
+  color: #fff;
+}
+.sik.gecersiz {
+  width: 28px;
+  color: var(--soluk);
+}
+.sik.gecersiz.secili {
+  background: var(--uyari);
+  border-color: var(--uyari);
+}
+.tablo th.sayi,
+.tablo td.sayi {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.secili-satir td {
+  background: var(--ana-acik);
+}
+
+/* --- Karne --- */
+.kapsam-secimi {
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.kapsam-secimi select {
+  width: auto;
+}
+.iki-sutun {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 0 24px;
+}
+.basari-listesi {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--kart);
+  border: 1px solid var(--cizgi);
+  border-radius: var(--yaricap);
+  padding: 14px 16px;
+}
+.basari-ust {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+.basari-aciklama {
+  display: block;
+}
+.basari-ust > span:last-child {
+  white-space: nowrap;
+}
+.cubuk {
+  position: relative;
+  height: 10px;
+  background: var(--zemin);
+  border-radius: 99px;
+}
+.cubuk-dolu {
+  height: 100%;
+  border-radius: 99px;
+}
+.cubuk-dolu.iyi {
+  background: var(--basari);
+}
+.cubuk-dolu.orta {
+  background: var(--uyari);
+}
+.cubuk-dolu.zayif {
+  background: var(--tehlike);
+}
+.cubuk-sinif {
+  position: absolute;
+  top: -3px;
+  width: 2px;
+  height: 16px;
+  margin-left: -1px;
+  background: var(--metin);
+  opacity: 0.6;
+}
+.yanilgi-grubu {
+  margin-bottom: 12px;
+}
+.yanilgi-listesi {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.yanilgi-listesi li {
+  border-top: 1px solid var(--cizgi);
+  padding-top: 10px;
+}
+.yanilgi-ust {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  margin-bottom: 4px;
+}
+.yanilgi-metni {
+  margin: 0 0 4px;
+}
+.grafik {
+  margin: 12px 0 0;
+  background: var(--kart);
+  border: 1px solid var(--cizgi);
+  border-radius: var(--yaricap);
+  padding: 12px;
+}
+.grafik svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.grafik-izgara {
+  stroke: var(--cizgi);
+  stroke-width: 1;
+}
+.grafik-eksen {
+  fill: var(--soluk);
+  font-size: 12px;
+}
+.grafik-deger {
+  fill: var(--metin);
+  font-size: 12px;
+  font-weight: 700;
+}
+.grafik-ogrenci {
+  fill: none;
+  stroke: var(--ana);
+  stroke-width: 3;
+}
+.grafik-ogrenci-nokta {
+  fill: var(--ana);
+}
+.grafik-sinif {
+  fill: none;
+  stroke: var(--soluk);
+  stroke-width: 2;
+  stroke-dasharray: 6 5;
+}
+.grafik-sinif-nokta {
+  fill: var(--soluk);
+}
+.grafik-aciklama {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--soluk);
+  margin-top: 6px;
+}
+.lejant {
+  display: inline-block;
+  width: 18px;
+  height: 0;
+  border-top: 3px solid var(--ana);
+}
+.lejant.sinif {
+  border-top: 2px dashed var(--soluk);
+  margin-left: 12px;
+}
+
+@media print {
+  .ust-cubuk,
+  .geri-bag,
+  .yazdir-gizle {
+    display: none;
+  }
+  .icerik {
+    padding: 0;
+    max-width: none;
+  }
+  .kart,
+  .basari-listesi,
+  .grafik {
+    break-inside: avoid;
+  }
+}

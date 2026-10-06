@@ -6,6 +6,9 @@ import Giris from './sayfalar/Giris'
 import SifreBelirle from './sayfalar/SifreBelirle'
 import Siniflar from './sayfalar/Siniflar'
 import SinifDetay from './sayfalar/SinifDetay'
+import UygulamaSayfasi from './sayfalar/Uygulama'
+import Karne from './sayfalar/Karne'
+import AdDuzenle from './bilesenler/AdDuzenle'
 
 export default function App() {
   const [oturum, setOturum] = useState<Session | null>(null)
@@ -49,14 +52,22 @@ export default function App() {
           Deneme Değerlendirme
         </a>
         <div className="kullanici">
-          <span>{ogretmenAdi || oturum.user.email}</span>
+          <AdDuzenle
+            kullaniciId={oturum.user.id}
+            ad={ogretmenAdi}
+            yedek={oturum.user.email ?? ''}
+            degisti={setOgretmenAdi}
+          />
           <button className="bag" onClick={() => supabase.auth.signOut()}>
             Çıkış
           </button>
         </div>
       </header>
       <main className="icerik">
-        {rota.sayfa === 'sinif' ? <SinifDetay id={rota.id} /> : <Siniflar />}
+        {rota.sayfa === 'sinif' && <SinifDetay key={rota.id} id={rota.id} />}
+        {rota.sayfa === 'uygulama' && <UygulamaSayfasi key={rota.id} id={rota.id} />}
+        {rota.sayfa === 'karne' && <Karne key={rota.id} id={rota.id} />}
+        {rota.sayfa === 'siniflar' && <Siniflar />}
       </main>
     </>
   )

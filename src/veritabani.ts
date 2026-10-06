@@ -110,7 +110,13 @@ export type Database = {
       uygulamalar: Tablo<Uygulama, { sinif_id: number; deneme_id: number; tarih?: string }>
       sonuclar: Tablo<
         Sonuc,
-        { uygulama_id: number; ogrenci_id: number; giris_yolu?: 'elle' | 'optik'; onaylandi?: boolean }
+        {
+          uygulama_id: number
+          ogrenci_id: number
+          giris_yolu?: 'elle' | 'optik'
+          onaylandi?: boolean
+          updated_at?: string
+        }
       >
       cevaplar: Tablo<Cevap, Cevap>
     }
