@@ -7,6 +7,10 @@
 - [ ] **Supabase dönüş adresi:** Authentication → URL Configuration → Site URL `https://tayfunhocaozel.github.io/deneme-degerlendirme/`; Redirect URLs'e bu adres ve `http://localhost:5173/deneme-degerlendirme/`.
 - [ ] Telefon türü (Android / iPhone) öğrenilecek; optik okuma aşamasında gerekli.
 
+- [ ] **`sonuc_kaydet` fonksiyonunu kur:** `supabase/migrations/20261006150000_sonuc_kaydet.sql` Supabase SQL Editor'da çalıştırılacak. Optik okumada kaydetme buna bağlı.
+- [ ] **Optik okumayı gerçek formlarla dene:** Deneme_0N_Optik.pdf yazdırılıp kurşun kalemle doldurulacak, Android Chrome'da okutulacak. Ret oranı yüksekse köşe işareti "kare dolululuğu" eşiği (0,88) gerçek fotoğraflarla gözden geçirilecek (üretilmiş testte 0,876 çıkan bir köşe yüzünden ret oldu).
+- [ ] **Soru üretim tarafına bildir:** referans okuyucu (`optik_oku_ornek.py`) koyu zeminde çekilen fotoğrafta köşe işaretlerini bulamıyor (`RETR_EXTERNAL` → `RETR_LIST`) ve form ~13 px/mm'den büyük görününce eşik penceresi yetmiyor. Platform sürümünde ikisi düzeltildi.
+
 ## Tamamlananlar
 
 - [x] Supabase projesi açıldı: `deneme-degerlendirme` (`ihucakamyxyulodwqsmm`, Frankfurt). 2026-10-05
