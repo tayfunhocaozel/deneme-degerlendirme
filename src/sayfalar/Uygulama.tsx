@@ -6,6 +6,16 @@ import CevapGirisi from '../bilesenler/CevapGirisi'
 import Onay from '../bilesenler/Onay'
 import { tarihYaz } from '../bilesenler/SinifDenemeleri'
 import { git } from '../yonlendirme'
+import SinifRaporu from '../bilesenler/SinifRaporu'
+import SoruAnalizi from '../bilesenler/SoruAnalizi'
+import type { Kagit } from '../analiz'
+
+type Sekme = 'giris' | 'rapor' | 'analiz'
+const SEKMELER: [Sekme, string][] = [
+  ['giris', 'Cevap girişi'],
+  ['rapor', 'Sınıf raporu'],
+  ['analiz', 'Soru analizi'],
+]
 
 type Veri = {
   uygulama: Uygulama
@@ -22,6 +32,7 @@ export default function UygulamaSayfasi({ id }: { id: number }) {
   const [isaretler, setIsaretler] = useState<Map<number, Isaret[]>>(new Map()) // sonuc_id → işaretler
   const [secili, setSecili] = useState<number | null>(null) // ogrenci_id
   const [hata, setHata] = useState('')
+  const [sekme, setSekme] = useState<Sekme>('giris')
 
   useEffect(() => {
     ;(async () => {
@@ -87,6 +98,9 @@ export default function UygulamaSayfasi({ id }: { id: number }) {
   const ozetler = ogrenciler.map((o) => ogrenciOzeti(o.id)).filter((x) => x !== null)
   const ortalama = ozetler.length ? ozetler.reduce((t, x) => t + x.net, 0) / ozetler.length : null
   const seciliOgrenci = ogrenciler.find((o) => o.id === secili)
+  const kagitlar: Kagit[] = ogrenciler
+    .filter((o) => sonuclar.has(o.id))
+    .map((o) => ({ ogrenciId: o.id, isaretler: isaretler.get(sonuclar.get(o.id)!.id) ?? [] }))
 
   function sonrakiGirilmemis(simdiki: number): Ogrenci | undefined {
     const sira = ogrenciler.findIndex((o) => o.id === simdiki)
@@ -171,6 +185,29 @@ export default function UygulamaSayfasi({ id }: { id: number }) {
         />
       </div>
 
+      <nav className="sekmeler" role="tablist">
+        {SEKMELER.map(([k, ad]) => (
+          <button
+            key={k}
+            role="tab"
+            aria-selected={sekme === k}
+            className={sekme === k ? 'sekme secili' : 'sekme'}
+            onClick={() => setSekme(k)}
+          >
+            {ad}
+          </button>
+        ))}
+      </nav>
+
+      {sekme === 'rapor' && (
+        <SinifRaporu deneme={deneme} sinif={sinif} sorular={veri.sorular} ogrenciler={ogrenciler} kagitlar={kagitlar} />
+      )}
+      {sekme === 'analiz' && (
+        <SoruAnalizi deneme={deneme} sinif={sinif} sorular={veri.sorular} sinifKagitlari={kagitlar} />
+      )}
+
+      {sekme === 'giris' && (
+      <>
       <div className="ozet-serit">
         <span>
           <strong>
@@ -256,6 +293,8 @@ export default function UygulamaSayfasi({ id }: { id: number }) {
           </tbody>
         </table>
       </div>
+      </>
+      )}
     </>
   )
 }
