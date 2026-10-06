@@ -5,13 +5,16 @@ import { useEffect, useState } from 'react'
 //   #/sinif/12        12 numaralı sınıfın öğrencileri ve denemeleri
 //   #/uygulama/5      5 numaralı uygulamanın (denemenin bir sınıftaki uygulanışı) cevap girişi
 //   #/karne/40        40 numaralı öğrencinin karnesi
+//   #/optik           telefon kamerasıyla optik form okuma
 export type Rota =
   | { sayfa: 'siniflar' }
   | { sayfa: 'sinif'; id: number }
   | { sayfa: 'uygulama'; id: number }
   | { sayfa: 'karne'; id: number }
+  | { sayfa: 'optik' }
 
 function cozumle(hash: string): Rota {
+  if (/^#\/optik/.test(hash)) return { sayfa: 'optik' }
   const eslesme = hash.match(/^#\/(sinif|uygulama|karne)\/(\d+)/)
   if (eslesme) return { sayfa: eslesme[1] as 'sinif' | 'uygulama' | 'karne', id: Number(eslesme[2]) }
   return { sayfa: 'siniflar' }

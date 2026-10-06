@@ -9,6 +9,10 @@ import SinifDetay from './sayfalar/SinifDetay'
 import UygulamaSayfasi from './sayfalar/Uygulama'
 import Karne from './sayfalar/Karne'
 import AdDuzenle from './bilesenler/AdDuzenle'
+import { lazy, Suspense } from 'react'
+
+// Optik okuma sayfası (kamera ve okuyucu) yalnızca açılınca yüklenir.
+const OptikOku = lazy(() => import('./sayfalar/OptikOku'))
 
 export default function App() {
   const [oturum, setOturum] = useState<Session | null>(null)
@@ -68,6 +72,11 @@ export default function App() {
         {rota.sayfa === 'uygulama' && <UygulamaSayfasi key={rota.id} id={rota.id} />}
         {rota.sayfa === 'karne' && <Karne key={rota.id} id={rota.id} />}
         {rota.sayfa === 'siniflar' && <Siniflar />}
+        {rota.sayfa === 'optik' && (
+          <Suspense fallback={<p className="soluk">Yükleniyor…</p>}>
+            <OptikOku />
+          </Suspense>
+        )}
       </main>
     </>
   )

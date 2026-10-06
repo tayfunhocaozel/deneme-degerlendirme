@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.117.2",
+    "@techstark/opencv-js": "^5.0.0-release.1",
+    "jsqr": "^1.4.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"

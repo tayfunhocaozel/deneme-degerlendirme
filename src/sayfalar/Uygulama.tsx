@@ -178,6 +178,9 @@ export default function UygulamaSayfasi({ id }: { id: number }) {
             {deneme.surum > 1 && ` (sürüm ${deneme.surum})`}
           </p>
         </div>
+        <a className="dugme-gibi" href="#/optik">
+          Optik oku
+        </a>
         <Onay
           etiket="Bu denemeyi sınıftan kaldır"
           soru="Bu uygulamada girilen bütün sonuçlar silinecek. Emin misiniz?"

@@ -142,7 +142,18 @@ export type Database = {
         Relationships: []
       }
     }
-    Functions: Record<string, never>
+    Functions: {
+      sonuc_kaydet: {
+        Args: {
+          p_uygulama_id: number
+          p_ogrenci_id: number
+          p_cevaplar: string[]
+          p_giris_yolu?: string
+          p_uzerine_yaz?: boolean
+        }
+        Returns: number
+      }
+    }
     Enums: Record<string, never>
     CompositeTypes: Record<string, never>
   }

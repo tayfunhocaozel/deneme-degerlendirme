@@ -33,7 +33,16 @@ export default function Siniflar() {
     <>
       <div className="baslik-satiri">
         <h1>Sınıflarım</h1>
-        {!formAcik && <button onClick={() => setFormAcik(true)}>+ Sınıf ekle</button>}
+        <div className="dugmeler">
+          <a className="dugme-gibi" href="#/optik">
+            Optik oku
+          </a>
+          {!formAcik && (
+            <button className="ikincil" onClick={() => setFormAcik(true)}>
+              + Sınıf ekle
+            </button>
+          )}
+        </div>
       </div>
 
       {formAcik && (
