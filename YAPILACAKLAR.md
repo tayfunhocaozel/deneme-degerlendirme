@@ -3,7 +3,6 @@
 ## Bekleyenler
 
 - [ ] **Açık kaydı kapat:** Supabase panelinde Authentication → Sign In / Providers → "Allow new users to sign up" kapatılacak. Öğretmenler Authentication → Users → "Invite user" ile davetle eklenir. (Kapalı değilse herhangi biri hesap açıp cevap anahtarlarını görebilir.)
-- [ ] **Fotoğraftan sınıf listesi okuma için yapay zekâ API anahtarı:** anahtar alınacak, Supabase Edge Function'ın gizli ayarlarına (secrets) konacak; tarayıcıya hiç gitmeyecek. Öğrenci adları yapay zekâ servisine gideceği için velilere verilecek aydınlatma metnine eklenecek.
 - [ ] **Supabase dönüş adresi:** Authentication → URL Configuration → Site URL `https://tayfunhocaozel.github.io/deneme-degerlendirme/`; Redirect URLs'e bu adres ve `http://localhost:5173/deneme-degerlendirme/`.
 - [ ] **Optik okumayı daha çok gerçek formla dene:** ilk gerçek okuma 2026-10-06'da çalıştı. Deneme_0N_Optik.pdf yazdırılıp kurşun kalemle doldurulacak, Android Chrome'da okutulacak. Ret oranı yüksekse köşe işareti "kare dolululuğu" eşiği (0,88) gerçek fotoğraflarla gözden geçirilecek (üretilmiş testte 0,876 çıkan bir köşe yüzünden ret oldu).
 - [ ] **Soru üretim tarafına bildir:** referans okuyucu (`optik_oku_ornek.py`) koyu zeminde çekilen fotoğrafta köşe işaretlerini bulamıyor (`RETR_EXTERNAL` → `RETR_LIST`) ve form ~13 px/mm'den büyük görününce eşik penceresi yetmiyor. Platform sürümünde ikisi düzeltildi.
@@ -18,3 +17,4 @@
 - [x] Soru üretim tarafı denemeleri `deneme_aktar` ile gönderiyor; 8-D01…8-D04 yüklendi, test denemesi silindi. 2026-10-06
 - [x] Deneme uygulama, elle cevap girişi, öğrenci karnesi ve telefon uyumu yayında; kullanıcı telefonda doğruladı. 2026-10-06
 - [x] Sınıf raporu, soru analizi ve telefonla optik okuma yayında; optik okuma telefonda gerçek formla çalıştı. 2026-10-06
+- [x] Fotoğraftan sınıf listesi okuma özelliğinden vazgeçildi; "Fotoğraftan ekle" düğmesi kaldırıldı. 2026-10-09

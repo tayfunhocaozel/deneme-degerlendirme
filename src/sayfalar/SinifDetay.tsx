@@ -144,9 +144,6 @@ export default function SinifDetay({ id }: { id: number }) {
             <button className="ikincil" onClick={() => { setBilgi(''); setMod('toplu') }}>
               Excel'den toplu ekle
             </button>
-            <button className="ikincil" disabled title="Yapay zekâ bağlantısı kurulunca açılacak">
-              Fotoğraftan ekle (yakında)
-            </button>
           </div>
         </>
       )}

@@ -1,4 +1,4 @@
-// Excel'den, yapıştırılan metinden (ileride fotoğraftan) gelen sınıf listesini
+// Excel'den ya da yapıştırılan metinden gelen sınıf listesini
 // { okul_no, ad_soyad } satırlarına çevirir.
 //
 // Desteklenen biçimler:
