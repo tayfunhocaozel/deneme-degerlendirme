@@ -4,9 +4,9 @@
   --cizgi: #dde2ea;
   --metin: #1b2433;
   --soluk: #637083;
-  --ana: #1d4ed8;
-  --ana-koyu: #1e40af;
-  --ana-acik: #e8efff;
+  --ana: #298c3a; /* Forest Green */
+  --ana-koyu: #1f6e2d;
+  --ana-acik: #e6f4e8;
   --tehlike: #c62828;
   --tehlike-acik: #fdecec;
   --basari: #1b7a3d;
@@ -29,9 +29,9 @@
     --cizgi: #2e3744;
     --metin: #e6eaf0;
     --soluk: #9aa5b5;
-    --ana: #6b9bff;
-    --ana-koyu: #8fb2ff;
-    --ana-acik: #1e2a44;
+    --ana: #5cc46e; /* koyu zeminde okunur yeşil */
+    --ana-koyu: #7fd38e;
+    --ana-acik: #18301e;
     --tehlike: #ff7b7b;
     --tehlike-acik: #3a1f22;
     --basari: #6fd394;
@@ -526,7 +526,7 @@ h3 {
   flex-direction: column;
   gap: 10px;
   border-color: var(--ana);
-  box-shadow: 0 4px 18px rgb(29 78 216 / 0.1);
+  box-shadow: 0 4px 18px rgb(41 140 58 / 0.12);
 }
 .cevap-girisi .baslik-satiri {
   margin-bottom: 0;
