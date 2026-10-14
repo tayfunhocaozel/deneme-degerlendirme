@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { fener, kameraAc, kameraKapat, kareYakala, netlik, qrAra, yerlesikQrVar, type Kamera } from './kamera.ts'
 import { formuOku, okuyucuyuHazirla } from './okuma.ts'
 import type { OkumaSonucu, QrBilgisi } from './okuyucu.ts'
-import { SABLON } from './sablon.ts'
+import { qrCoz, SABLONLAR } from './sablon.ts'
 
 const ARALIK_MS = 180
 const EN_AZ_PXMM = 8.5 // formun ~850 px'ten küçük görünmesi okumayı bozar
@@ -110,7 +110,8 @@ export default function KameraEkrani({ okundu }: { okundu: (s: OkumaSonucu) => v
           const enNet = Math.max(...gecmis.map((g) => g.n))
           const net = gecmis[gecmis.length - 1].n >= 0.6 * enNet
           const sureDoldu = Date.now() - ilkGorulme > EN_COK_BEKLEME_MS
-          if (s / SABLON.qr.kod_alani.kenar < EN_AZ_PXMM) setDurum({ metin: 'Form küçük görünüyor: biraz yaklaşın.', tur: 'uyari' })
+          const kodKenari = (SABLONLAR[qrCoz(qr.metin)?.sablonSurumu ?? 1] ?? SABLONLAR[1]).qr.kod_alani.kenar
+          if (s / kodKenari < EN_AZ_PXMM) setDurum({ metin: 'Form küçük görünüyor: biraz yaklaşın.', tur: 'uyari' })
           else if (!okuyucuHazir.current) setDurum({ metin: 'Form bulundu. Okuyucu yükleniyor…', tur: 'uyari' })
           else if ((sabit && net) || sureDoldu) {
             gecmis.length = 0

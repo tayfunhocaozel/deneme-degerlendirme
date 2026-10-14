@@ -6,7 +6,7 @@
 //      4 mm'lik işaret 51 px'lik eşik penceresinden büyük kalıyor, içi boş görünüp eleniyordu.
 // Her ikisi de üretilmiş test fotoğraflarıyla gösterildi (değiştirilmemiş referans 12'de 2, bu sürüm 12'de 10 doğru,
 // 2 ret, 0 yanlış). DOM'a bağlı değildir; Web Worker'da ve testte Node'da çalışır.
-import { SABLON } from './sablon.ts'
+import { qrCoz, SABLONLAR, type Sablon } from './sablon.ts'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type CV = any
@@ -165,7 +165,7 @@ function isaretAdaylari(cv: CV, gri: CV, qrKose: Nokta[]): [number, number, numb
 }
 
 // Fotoğraftaki formu düzeltir. Dönen Mat'ı çağıran siler.
-function duzelt(cv: CV, gri: CV, qr: QrBilgisi): CV {
+function duzelt(cv: CV, gri: CV, qr: QrBilgisi, SABLON: Sablon): CV {
   const ka = SABLON.qr.kod_alani
   const qrMerkezSablon: Nokta = [ka.x + ka.kenar / 2, ka.y + ka.kenar / 2]
   const m = SABLON.isaret_merkezleri
@@ -228,17 +228,18 @@ function duzelt(cv: CV, gri: CV, qr: QrBilgisi): CV {
 
 // --- Baloncuklar ---
 
-// cv.circle ile aynı piksel kümesini kullanmak için daire maskesini bir kez çiz, ofsetleri sakla.
-let daireOfsetleri: Nokta[] | null = null
+// cv.circle ile aynı piksel kümesini kullanmak için daire maskesini yarıçap başına bir kez çiz, ofsetleri sakla.
+const daireOfsetleri = new Map<number, Nokta[]>()
 function ofsetler(cv: CV, r: number): Nokta[] {
-  if (daireOfsetleri) return daireOfsetleri
+  const kayitli = daireOfsetleri.get(r)
+  if (kayitli) return kayitli
   const boyut = 2 * r + 3
   const m = cv.Mat.zeros(boyut, boyut, cv.CV_8UC1)
   cv.circle(m, new cv.Point(r + 1, r + 1), r, new cv.Scalar(255), -1)
   const liste: Nokta[] = []
   for (let yy = 0; yy < boyut; yy++) for (let xx = 0; xx < boyut; xx++) if (m.ucharAt(yy, xx)) liste.push([xx - r - 1, yy - r - 1])
   m.delete()
-  daireOfsetleri = liste
+  daireOfsetleri.set(r, liste)
   return liste
 }
 
@@ -275,6 +276,11 @@ function sec(d: number[]): Secim {
 export function oku(cv: CV, griTam: CV, verilenQr: QrBilgisi | null): OkumaSonucu {
   let qr = verilenQr ?? qrBul(cv, griTam)
   if (!qr) throw new OkumaHatasi('QR okunamadı: formu düz ve net çekin, QR görünür olsun.')
+  const icerik = qrCoz(qr.metin)
+  if (!icerik) throw new OkumaHatasi(`Bu QR platformun formuna ait değil: "${qr.metin}".`)
+  const SABLON = SABLONLAR[icerik.sablonSurumu]
+  if (!SABLON)
+    throw new OkumaHatasi(`Bu form, uygulamanın tanımadığı optik şablon v${icerik.sablonSurumu} ile basılmış. Uygulamanın güncellenmesi gerekiyor.`)
 
   // QR boyutundan ölçek: ~10 px/mm'den büyükse küçült.
   const pxmm = uzaklik(qr.kose[0], qr.kose[1]) / SABLON.qr.kod_alani.kenar
@@ -290,7 +296,7 @@ export function oku(cv: CV, griTam: CV, verilenQr: QrBilgisi | null): OkumaSonuc
 
   let duz: CV
   try {
-    duz = duzelt(cv, gri, qr)
+    duz = duzelt(cv, gri, qr, SABLON)
   } finally {
     if (gri !== griTam) gri.delete()
   }

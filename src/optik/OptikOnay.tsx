@@ -4,7 +4,7 @@ import type { Deneme, DenemeSorusu, Isaret, Ogrenci, Sinif, Sonuc, Uygulama } fr
 import { netYaz, ozetle } from '../puan'
 import { tarihYaz } from '../bilesenler/SinifDenemeleri'
 import type { OkumaSonucu } from './okuyucu.ts'
-import { QR_BICIMI } from './kamera.ts'
+import { qrCoz } from './sablon.ts'
 import { eslestir, type Eslesme } from './eslestir.ts'
 
 export type KayitBilgisi = {
@@ -56,10 +56,9 @@ export default function OptikOnay({
   // QR → deneme
   useEffect(() => {
     ;(async () => {
-      const m = okuma.qr.match(QR_BICIMI)
-      if (!m) return setDenemeHatasi(`Bu QR platformun formuna ait değil: "${okuma.qr}".`)
-      const [, kod, surumMetni] = m
-      const surum = Number(surumMetni)
+      const icerik = qrCoz(okuma.qr)
+      if (!icerik) return setDenemeHatasi(`Bu QR platformun formuna ait değil: "${okuma.qr}".`)
+      const { kod, surum } = icerik
       const d = await supabase.from('denemeler').select('*').eq('deneme_kodu', kod).eq('surum', surum).maybeSingle()
       if (d.error) return setDenemeHatasi(hataMetni(d.error))
       if (!d.data) {

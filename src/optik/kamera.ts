@@ -1,5 +1,6 @@
 // Kamera, fener, tarayıcının yerleşik QR dedektörü ve netlik ölçümü.
 import type { Nokta, QrBilgisi } from './okuyucu.ts'
+import { qrCoz } from './sablon.ts'
 
 type AlgilananKod = { rawValue: string; format: string; cornerPoints: { x: number; y: number }[] }
 type BarkodDedektoru = { detect(kaynak: CanvasImageSource): Promise<AlgilananKod[]> }
@@ -11,8 +12,6 @@ declare global {
     }
   }
 }
-
-export const QR_BICIMI = /^([^|]{1,20})\|(\d{1,3})$/ // "8-D04|1"
 
 let dedektor: BarkodDedektoru | null | undefined
 export async function yerlesikQrVar(): Promise<boolean> {
@@ -79,7 +78,7 @@ export async function qrAra(video: HTMLVideoElement): Promise<QrBilgisi | null> 
   const mx = video.videoWidth / 2
   const my = video.videoHeight / 2
   const uygun = kodlar
-    .filter((k) => QR_BICIMI.test(k.rawValue.trim()) && k.cornerPoints.length === 4)
+    .filter((k) => qrCoz(k.rawValue) !== null && k.cornerPoints.length === 4)
     .map((k) => {
       const kose: Nokta[] = k.cornerPoints.map((p) => [p.x, p.y])
       const cx = kose.reduce((t, p) => t + p[0], 0) / 4

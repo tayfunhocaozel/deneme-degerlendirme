@@ -2,6 +2,7 @@
 
 ## Bekleyenler
 
+- [ ] **Deneme 5 formunu telefonda yeniden okut:** şablon v2 desteği yayında (2026-10-14). Daha önce "QR platformun formuna ait değil: 8-D05|1|2" hatası veren formlar yeniden denenecek.
 - [ ] **Açık kaydı kapat:** Supabase panelinde Authentication → Sign In / Providers → "Allow new users to sign up" kapatılacak. Öğretmenler Authentication → Users → "Invite user" ile davetle eklenir. (Kapalı değilse herhangi biri hesap açıp cevap anahtarlarını görebilir.)
 - [ ] **Supabase dönüş adresi:** Authentication → URL Configuration → Site URL `https://tayfunhocaozel.github.io/deneme-degerlendirme/`; Redirect URLs'e bu adres ve `http://localhost:5173/deneme-degerlendirme/`.
 - [ ] **Optik okumayı daha çok gerçek formla dene:** ilk gerçek okuma 2026-10-06'da çalıştı. Deneme_0N_Optik.pdf yazdırılıp kurşun kalemle doldurulacak, Android Chrome'da okutulacak. Ret oranı yüksekse köşe işareti "kare dolululuğu" eşiği (0,88) gerçek fotoğraflarla gözden geçirilecek (üretilmiş testte 0,876 çıkan bir köşe yüzünden ret oldu).
@@ -17,4 +18,5 @@
 - [x] Soru üretim tarafı denemeleri `deneme_aktar` ile gönderiyor; 8-D01…8-D04 yüklendi, test denemesi silindi. 2026-10-06
 - [x] Deneme uygulama, elle cevap girişi, öğrenci karnesi ve telefon uyumu yayında; kullanıcı telefonda doğruladı. 2026-10-06
 - [x] Sınıf raporu, soru analizi ve telefonla optik okuma yayında; optik okuma telefonda gerçek formla çalıştı. 2026-10-06
+- [x] Optik okuyucu şablon sürümüne göre çalışıyor: QR `deneme_kodu|deneme_surumu|sablon_surumu` (iki alanlı eski QR = v1). v1 (A4'e 8, Deneme 1–4) ve v2 (A4'e 6, Deneme 5+) birlikte; üretilmiş testte v1 12'de 10, v2 8'de 8 doğru, 0 yanlış. 2026-10-14
 - [x] Fotoğraftan sınıf listesi okuma özelliğinden vazgeçildi; "Fotoğraftan ekle" düğmesi kaldırıldı. 2026-10-09
