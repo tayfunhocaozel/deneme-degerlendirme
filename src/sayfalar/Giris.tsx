@@ -18,6 +18,24 @@ export default function Giris() {
     if (error) setHata(hataMetni(error))
   }
 
+  // Geçici: Google girişi ayarını sınamak için. Öğretmen/öğrenci rolleri ayrılana kadar
+  // yalnızca bilgisayarda görünür; Google ile giren herkes şimdilik öğretmen kaydı alıyor.
+  const googleDenemesi = window.location.hostname === 'localhost'
+
+  async function googleIleGir() {
+    setHata('')
+    setBilgi('')
+    setBekliyor(true)
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: UYGULAMA_ADRESI },
+    })
+    if (error) {
+      setBekliyor(false)
+      setHata(hataMetni(error))
+    }
+  }
+
   async function sifremiUnuttum() {
     setHata('')
     setBilgi('')
@@ -67,6 +85,11 @@ export default function Giris() {
         <button type="button" className="bag" onClick={sifremiUnuttum} disabled={bekliyor}>
           Şifremi unuttum
         </button>
+        {googleDenemesi && (
+          <button type="button" onClick={googleIleGir} disabled={bekliyor}>
+            Google ile giriş (deneme)
+          </button>
+        )}
         <p className="soluk kucuk">Hesaplar yalnızca davetle açılır.</p>
       </form>
     </div>
