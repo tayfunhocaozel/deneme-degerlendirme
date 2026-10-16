@@ -3,7 +3,6 @@
 ## Bekleyenler
 
 - [ ] **Öğrenci girişini telefonda dene:** yayında (2026-10-16). Gerçek bir öğrenciyle telefonda Google girişi, eşleştirme, cevap gönderme ve sonuç ekranı.
-- [ ] **Test kayıtlarını temizle:** 2026-10-16 ikinci Google hesabıyla yapılan öğrenci eşleşmesi ve gönderimi (ogrenci_hesaplari, ogrenci_gonderimleri, sonuclar'da giris_yolu='ogrenci').
 - [ ] **Cevap ekranında sınıf adı:** öğrenci birden fazla sınıfa bağlıysa gösterilmiyor; ogrenci_deneme() sınıf adını da döndürmeli.
 - [ ] **Sonraya:** cevap taslağını sunucuda saklama (cihaz değiştirince devam), Google hesabı olmayan öğrenciler için PIN yedeği.
 - [ ] **Deneme 5 formunu telefonda yeniden okut:** şablon v2 desteği yayında (2026-10-14). Daha önce "QR platformun formuna ait değil: 8-D05|1|2" hatası veren formlar yeniden denenecek.
@@ -12,6 +11,7 @@
 
 ## Tamamlananlar
 
+- [x] Öğrenci girişi test kayıtları silindi (eşleşme, gönderim, sonuç 73). Test hesabı tayfun.olcum@sinav.k12.tr telefon denemesi için duruyor. 2026-10-16
 - [x] Rol ayrımı: yalnızca davetli ya da onaylı başvurusu olan hesap öğretmen; cevap anahtarı yalnızca öğretmene açık. 2026-10-16
 - [x] Öğrenci girişi yayında: öğretmen/öğrenci giriş sekmeleri, öğretmen başvurusu ve yönetici onayı, sınıf kodu ile numara eşleştirme ve çakışma çözümü, denemeyi öğrenci girişine açma (son tarihli), cevap kâğıdı (masaüstü 2 sütun, telefon tek sütun), sonuç, denemelerim, genel durum. 2026-10-16
 - [x] Google ile giriş kuruldu: Google Cloud projesi "Deneme Degerlendirme" (In production, yalnızca openid/email/profile), Supabase Google sağlayıcısı, Site URL ve Redirect URLs. Gizlilik sayfası yayında (gizlilik.html). Öğretmen hesabı Google ile giriş yaptı, mevcut hesaba bağlandı. 2026-10-16
