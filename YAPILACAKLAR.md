@@ -2,14 +2,18 @@
 
 ## Bekleyenler
 
+- [ ] **Öğrenci girişini telefonda dene:** yayında (2026-10-16). Gerçek bir öğrenciyle telefonda Google girişi, eşleştirme, cevap gönderme ve sonuç ekranı.
+- [ ] **Test kayıtlarını temizle:** 2026-10-16 ikinci Google hesabıyla yapılan öğrenci eşleşmesi ve gönderimi (ogrenci_hesaplari, ogrenci_gonderimleri, sonuclar'da giris_yolu='ogrenci').
+- [ ] **Cevap ekranında sınıf adı:** öğrenci birden fazla sınıfa bağlıysa gösterilmiyor; ogrenci_deneme() sınıf adını da döndürmeli.
+- [ ] **Sonraya:** cevap taslağını sunucuda saklama (cihaz değiştirince devam), Google hesabı olmayan öğrenciler için PIN yedeği.
 - [ ] **Deneme 5 formunu telefonda yeniden okut:** şablon v2 desteği yayında (2026-10-14). Daha önce "QR platformun formuna ait değil: 8-D05|1|2" hatası veren formlar yeniden denenecek.
-- [ ] **Öğretmen/öğrenci rollerini ayır (öncelikli):** şu an giriş yapan her hesap tetikleyiciyle öğretmen kaydı alıyor ve cevap anahtarlarını okuyabiliyor. Kayıt (sign up) Google girişi için açık kalmalı; bu yüzden "açık kaydı kapat" yerine yalnızca davet edilen hesaplar öğretmen olacak, diğerleri numara eşleşene kadar hiçbir şey göremeyecek. Plan: OGRENCI_GIRISI.md.
-- [ ] **Google deneme düğmesini kaldır:** `Giris.tsx` içindeki "Google ile giriş (deneme)" yalnızca localhost'ta görünür; öğrenci sayfası yapılınca yerini asıl düğme alacak.
 - [ ] **Optik okumayı daha çok gerçek formla dene:** ilk gerçek okuma 2026-10-06'da çalıştı. Deneme_0N_Optik.pdf yazdırılıp kurşun kalemle doldurulacak, Android Chrome'da okutulacak. Ret oranı yüksekse köşe işareti "kare dolululuğu" eşiği (0,88) gerçek fotoğraflarla gözden geçirilecek (üretilmiş testte 0,876 çıkan bir köşe yüzünden ret oldu).
 - [ ] **Soru üretim tarafına bildir:** referans okuyucu (`optik_oku_ornek.py`) koyu zeminde çekilen fotoğrafta köşe işaretlerini bulamıyor (`RETR_EXTERNAL` → `RETR_LIST`) ve form ~13 px/mm'den büyük görününce eşik penceresi yetmiyor. Platform sürümünde ikisi düzeltildi.
 
 ## Tamamlananlar
 
+- [x] Rol ayrımı: yalnızca davetli ya da onaylı başvurusu olan hesap öğretmen; cevap anahtarı yalnızca öğretmene açık. 2026-10-16
+- [x] Öğrenci girişi yayında: öğretmen/öğrenci giriş sekmeleri, öğretmen başvurusu ve yönetici onayı, sınıf kodu ile numara eşleştirme ve çakışma çözümü, denemeyi öğrenci girişine açma (son tarihli), cevap kâğıdı (masaüstü 2 sütun, telefon tek sütun), sonuç, denemelerim, genel durum. 2026-10-16
 - [x] Google ile giriş kuruldu: Google Cloud projesi "Deneme Degerlendirme" (In production, yalnızca openid/email/profile), Supabase Google sağlayıcısı, Site URL ve Redirect URLs. Gizlilik sayfası yayında (gizlilik.html). Öğretmen hesabı Google ile giriş yaptı, mevcut hesaba bağlandı. 2026-10-16
 - [x] Supabase projesi açıldı: `deneme-degerlendirme` (`ihucakamyxyulodwqsmm`, Frankfurt). 2026-10-05
 - [x] İlk şema uygulandı ve test edildi (aktarım, değerlendirme görünümü, RLS). 2026-10-05

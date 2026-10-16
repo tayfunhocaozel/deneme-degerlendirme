@@ -197,7 +197,9 @@ export default function OptikOnay({
     }
   }
 
-  const kaydedilebilir = !!deneme && !!ogrenci && uygulamalar !== null && (!mevcut || uzerineYaz) && !bekliyor
+  // Öğrencinin kendi girdiği sonuç optik okumayı engellemez; optik her zaman geçerlidir.
+  const mevcutEngel = !!mevcut && mevcut.giris_yolu !== 'ogrenci'
+  const kaydedilebilir = !!deneme && !!ogrenci && uygulamalar !== null && (!mevcutEngel || uzerineYaz) && !bekliyor
 
   return (
     <div className="optik-onay">
@@ -284,7 +286,12 @@ export default function OptikOnay({
                     </select>
                   </label>
                 ) : null}
-                {mevcut && (
+                {mevcut && !mevcutEngel && (
+                  <p className="soluk kucuk">
+                    {ogrenci.ad_soyad} bu denemeyi kendisi girmiş. Kaydedince optik okuma geçerli sayılır.
+                  </p>
+                )}
+                {mevcut && mevcutEngel && (
                   <div className="uyari">
                     <p>
                       {ogrenci.ad_soyad} bu denemede zaten kayıtlı ({mevcut.giris_yolu},{' '}

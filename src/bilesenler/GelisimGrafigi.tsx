@@ -5,7 +5,13 @@ const G = 640
 const Y = 220
 const KENAR = { sol: 36, sag: 16, ust: 16, alt: 32 }
 
-export default function GelisimGrafigi({ noktalar }: { noktalar: Nokta[] }) {
+export default function GelisimGrafigi({
+  noktalar,
+  ogrenciEtiketi = 'Öğrencinin neti',
+}: {
+  noktalar: Nokta[]
+  ogrenciEtiketi?: string
+}) {
   const ust = Math.max(...noktalar.map((n) => n.en))
   const alt = Math.min(0, ...noktalar.map((n) => Math.floor(Math.min(n.ogrenci, n.sinif))))
   const genislik = G - KENAR.sol - KENAR.sag
@@ -42,7 +48,7 @@ export default function GelisimGrafigi({ noktalar }: { noktalar: Nokta[] }) {
         ))}
       </svg>
       <figcaption className="grafik-aciklama">
-        <span className="lejant ogrenci" /> Öğrencinin neti <span className="lejant sinif" /> Sınıf ortalaması
+        <span className="lejant ogrenci" /> {ogrenciEtiketi} <span className="lejant sinif" /> Sınıf ortalaması
       </figcaption>
     </figure>
   )

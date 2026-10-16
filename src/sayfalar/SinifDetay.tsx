@@ -5,6 +5,7 @@ import SinifFormu from '../bilesenler/SinifFormu'
 import TopluEkle from '../bilesenler/TopluEkle'
 import Onay from '../bilesenler/Onay'
 import SinifDenemeleri from '../bilesenler/SinifDenemeleri'
+import OgrenciHesaplari from '../bilesenler/OgrenciHesaplari'
 import { git } from '../yonlendirme'
 
 const numaraSirasi = (a: Ogrenci, b: Ogrenci) =>
@@ -115,6 +116,8 @@ export default function SinifDetay({ id }: { id: number }) {
       {hata && <p className="hata">{hata}</p>}
 
       <SinifDenemeleri sinifId={id} sinifDuzeyi={sinif.sinif_duzeyi} ogrenciSayisi={aktifler.length} />
+
+      <OgrenciHesaplari sinifKodu={sinif.katilim_kodu} ogrenciler={ogrenciler} />
 
       <h2 className="bolum-basligi">Öğrenciler</h2>
       {bilgi && <p className="basari">{bilgi}</p>}

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { hataMetni, supabase } from '../supabase'
-import type { Deneme, DenemeSorusu, Isaret, Ogrenci, Sinif, Sonuc, Uygulama } from '../veritabani'
+import type { Deneme, DenemeSorusu, Isaret, Ogrenci, OgrenciGonderimi, Sinif, Sonuc, Uygulama } from '../veritabani'
 import { netYaz, ozetle } from '../puan'
 import CevapGirisi from '../bilesenler/CevapGirisi'
 import Onay from '../bilesenler/Onay'
@@ -8,6 +8,7 @@ import { tarihYaz } from '../bilesenler/SinifDenemeleri'
 import { git } from '../yonlendirme'
 import SinifRaporu from '../bilesenler/SinifRaporu'
 import SoruAnalizi from '../bilesenler/SoruAnalizi'
+import OgrenciGirisiAyari from '../bilesenler/OgrenciGirisiAyari'
 import type { Kagit } from '../analiz'
 
 type Sekme = 'giris' | 'rapor' | 'analiz'
@@ -30,6 +31,7 @@ export default function UygulamaSayfasi({ id }: { id: number }) {
   const [veri, setVeri] = useState<Veri | null | undefined>(undefined)
   const [sonuclar, setSonuclar] = useState<Map<number, Sonuc>>(new Map())
   const [isaretler, setIsaretler] = useState<Map<number, Isaret[]>>(new Map()) // sonuc_id → işaretler
+  const [gonderimler, setGonderimler] = useState<Map<number, OgrenciGonderimi>>(new Map()) // ogrenci_id → gönderim
   const [secili, setSecili] = useState<number | null>(null) // ogrenci_id
   const [hata, setHata] = useState('')
   const [sekme, setSekme] = useState<Sekme>('giris')
@@ -39,15 +41,17 @@ export default function UygulamaSayfasi({ id }: { id: number }) {
       const u = await supabase.from('uygulamalar').select('*').eq('id', id).maybeSingle()
       if (u.error) return setHata(hataMetni(u.error))
       if (!u.data) return setVeri(null)
-      const [d, ds, s, o, so] = await Promise.all([
+      const [d, ds, s, o, so, g] = await Promise.all([
         supabase.from('denemeler').select('*').eq('id', u.data.deneme_id).single(),
         supabase.from('deneme_sorulari').select('*').eq('deneme_id', u.data.deneme_id).order('sira'),
         supabase.from('siniflar').select('*').eq('id', u.data.sinif_id).single(),
         supabase.from('ogrenciler').select('*').eq('sinif_id', u.data.sinif_id),
         supabase.from('sonuclar').select('*').eq('uygulama_id', id),
+        supabase.from('ogrenci_gonderimleri').select('*').eq('uygulama_id', id),
       ])
-      if (d.error || ds.error || s.error || o.error || so.error)
-        return setHata(hataMetni(d.error ?? ds.error ?? s.error ?? o.error ?? so.error))
+      if (d.error || ds.error || s.error || o.error || so.error || g.error)
+        return setHata(hataMetni(d.error ?? ds.error ?? s.error ?? o.error ?? so.error ?? g.error))
+      setGonderimler(new Map(g.data.map((x) => [x.ogrenci_id, x])))
       const c = so.data.length
         ? await supabase.from('cevaplar').select('*').in('sonuc_id', so.data.map((x) => x.id))
         : { data: [], error: null }
@@ -188,6 +192,13 @@ export default function UygulamaSayfasi({ id }: { id: number }) {
         />
       </div>
 
+      <OgrenciGirisiAyari
+        uygulama={uygulama}
+        sinifKodu={sinif.katilim_kodu}
+        gonderimSayisi={gonderimler.size}
+        degisti={(u) => setVeri({ ...veri, uygulama: u })}
+      />
+
       <nav className="sekmeler" role="tablist">
         {SEKMELER.map(([k, ad]) => (
           <button
@@ -267,6 +278,7 @@ export default function UygulamaSayfasi({ id }: { id: number }) {
                   <td className="hucre-no">{o.okul_no}</td>
                   <td className="hucre-ad">
                     <a href={`#/karne/${o.id}`}>{o.ad_soyad}</a>
+                    <KaynakEtiketi sonuc={sonuclar.get(o.id)} isaretler={isaretler} gonderim={gonderimler.get(o.id)} />
                   </td>
                   {ozet ? (
                     <>
@@ -297,6 +309,40 @@ export default function UygulamaSayfasi({ id }: { id: number }) {
         </table>
       </div>
       </>
+      )}
+    </>
+  )
+}
+
+const KAYNAK_ADI = { elle: 'elle', optik: 'optik', ogrenci: 'öğrenci girdi' } as const
+
+// Sonucun nereden geldiği; öğretmen girişi öğrencinin gönderdiğinden farklıysa uyarı.
+function KaynakEtiketi({
+  sonuc,
+  isaretler,
+  gonderim,
+}: {
+  sonuc: Sonuc | undefined
+  isaretler: Map<number, Isaret[]>
+  gonderim: OgrenciGonderimi | undefined
+}) {
+  if (!sonuc) return gonderim ? <span className="etiket etiket-uyari kaynak">gönderdi, sonuç silinmiş</span> : null
+  let fark = 0
+  if (gonderim && sonuc.giris_yolu !== 'ogrenci') {
+    const ogretmen = isaretler.get(sonuc.id) ?? []
+    fark = gonderim.cevaplar.filter((c, i) => c !== (ogretmen[i] ?? 'bos')).length
+  }
+  return (
+    <>
+      {' '}
+      <span className="soluk kucuk kaynak">{KAYNAK_ADI[sonuc.giris_yolu]}</span>
+      {fark > 0 && (
+        <span
+          className="etiket etiket-uyari kaynak"
+          title="Öğrencinin kendi gönderdiği cevaplar öğretmen girişinden farklı. Öğretmen girişi geçerli sayılır."
+        >
+          öğrenci girişiyle {fark} soru farklı
+        </span>
       )}
     </>
   )
