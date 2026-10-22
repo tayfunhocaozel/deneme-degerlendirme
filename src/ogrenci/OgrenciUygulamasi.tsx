@@ -68,7 +68,6 @@ export default function OgrenciUygulamasi({ oturum, rol, yenile }: { oturum: Ses
             key={rota.id}
             id={rota.id}
             kullaniciId={oturum.user.id}
-            sinifAdi={onayli.length === 1 ? onayli[0].sinif : undefined}
           />}
         {rota.sayfa === 'sonuc' && <SonucEkrani key={rota.id} id={rota.id} />}
         {rota.sayfa === 'denemelerim' && <Denemelerim />}

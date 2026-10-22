@@ -2,8 +2,7 @@
 
 ## Bekleyenler
 
-- [ ] **Öğrenci girişini telefonda dene:** yayında (2026-10-16). Gerçek bir öğrenciyle telefonda Google girişi, eşleştirme, cevap gönderme ve sonuç ekranı.
-- [ ] **Cevap ekranında sınıf adı:** öğrenci birden fazla sınıfa bağlıysa gösterilmiyor; ogrenci_deneme() sınıf adını da döndürmeli.
+- [ ] **Cevap ekranında sınıf adı:** veritabanı fonksiyonu güncellendi (2026-10-22); istemci yayına alınıp telefonda denenecek.
 - [ ] **Sonraya:** cevap taslağını sunucuda saklama (cihaz değiştirince devam), Google hesabı olmayan öğrenciler için PIN yedeği.
 - [ ] **Deneme 5 formunu telefonda yeniden okut:** şablon v2 desteği yayında (2026-10-14). Daha önce "QR platformun formuna ait değil: 8-D05|1|2" hatası veren formlar yeniden denenecek.
 - [ ] **Optik okumayı daha çok gerçek formla dene:** ilk gerçek okuma 2026-10-06'da çalıştı. Deneme_0N_Optik.pdf yazdırılıp kurşun kalemle doldurulacak, Android Chrome'da okutulacak. Ret oranı yüksekse köşe işareti "kare dolululuğu" eşiği (0,88) gerçek fotoğraflarla gözden geçirilecek (üretilmiş testte 0,876 çıkan bir köşe yüzünden ret oldu).
@@ -11,6 +10,7 @@
 
 ## Tamamlananlar
 
+- [x] Öğrenci girişi telefonda denendi: Google girişi, eşleştirme, cevap gönderme ve sonuç ekranı çalışıyor. 2026-10-18
 - [x] Öğrenci girişi test kayıtları silindi (eşleşme, gönderim, sonuç 73). Test hesabı tayfun.olcum@sinav.k12.tr telefon denemesi için duruyor. 2026-10-16
 - [x] Rol ayrımı: yalnızca davetli ya da onaylı başvurusu olan hesap öğretmen; cevap anahtarı yalnızca öğretmene açık. 2026-10-16
 - [x] Öğrenci girişi yayında: öğretmen/öğrenci giriş sekmeleri, öğretmen başvurusu ve yönetici onayı, sınıf kodu ile numara eşleştirme ve çakışma çözümü, denemeyi öğrenci girişine açma (son tarihli), cevap kâğıdı (masaüstü 2 sütun, telefon tek sütun), sonuç, denemelerim, genel durum. 2026-10-16

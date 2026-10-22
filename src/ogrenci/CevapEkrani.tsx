@@ -26,11 +26,9 @@ function taslakOku(anahtar: string, adet: number): Secim[] {
 export default function CevapEkrani({
   id,
   kullaniciId,
-  sinifAdi,
 }: {
   id: number
   kullaniciId: string
-  sinifAdi?: string
 }) {
   const { deneme, hata: yuklemeHatasi } = useDeneme(id)
   const anahtar = taslakAnahtari(kullaniciId, id)
@@ -106,7 +104,7 @@ export default function CevapEkrani({
         <h1>{deneme.baslik}</h1>
         <p className="soluk">
           <strong>{deneme.deneme_kodu}</strong>
-          {sinifAdi && ` · ${sinifAdi}`} · {deneme.soru_sayisi} soru · son gün {sonTarihYaz(deneme.son_tarih!)}
+          {deneme.sinif && ` · ${deneme.sinif}`} · {deneme.soru_sayisi} soru · son gün {sonTarihYaz(deneme.son_tarih!)}
         </p>
       </div>
 

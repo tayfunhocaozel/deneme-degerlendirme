@@ -47,6 +47,7 @@ export type SoruSonucu = {
 }
 
 export type DenemeAyrintisi = OgrenciDenemesi & {
+  sinif?: string
   giris_yolu: 'elle' | 'optik' | 'ogrenci' | null
   sorular: SoruSonucu[] | null
   kazanimlar: (KazanimOzeti & { sinif_oran: number })[] | null
