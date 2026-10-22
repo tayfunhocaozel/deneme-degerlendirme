@@ -26,7 +26,19 @@ export type OkumaSonucu = {
   duz: { gen: number; yuk: number; veri: Uint8Array } // düzeltilmiş form (gri, 1 mm = 8 px)
 }
 
-export class OkumaHatasi extends Error {}
+// Okumanın takıldığı aşama ve öğretmene/geliştiriciye gösterilen tanı satırları.
+export type Asama = 'qr_yok' | 'qr_yabanci' | 'sablon_yok' | 'kose_yok' | 'kose_uyusmuyor' | 'beklenmedik'
+export class OkumaHatasi extends Error {
+  constructor(
+    mesaj: string,
+    public asama: Asama,
+    public ayrinti: string[] = [],
+  ) {
+    super(mesaj)
+  }
+}
+
+const sayi = (n: number, basamak = 1) => n.toLocaleString('tr-TR', { maximumFractionDigits: basamak })
 
 export const OLCEK = 8 // düzeltilmiş görüntüde 1 mm = 8 px
 export const HEDEF_PXMM = 10
@@ -116,7 +128,14 @@ export function qrBul(cv: CV, gri: CV): QrBilgisi | null {
 
 // --- Köşe işaretleri ---
 
-function isaretAdaylari(cv: CV, gri: CV, qrKose: Nokta[]): [number, number, number][] {
+type AdayTaramasi = {
+  adaylar: [number, number, number][]
+  yakinKare: number // kare dolululuk eşiğine az farkla takılanlar (0,85–0,88)
+  enYakinDoluluk: number
+  kucukElenen: number
+}
+
+function isaretAdaylari(cv: CV, gri: CV, qrKose: Nokta[]): AdayTaramasi {
   const ikili = new cv.Mat()
   cv.adaptiveThreshold(gri, ikili, 255, cv.ADAPTIVE_THRESH_MEAN_C, cv.THRESH_BINARY_INV, 51, 15)
   const konturlar = new cv.MatVector()
@@ -124,6 +143,8 @@ function isaretAdaylari(cv: CV, gri: CV, qrKose: Nokta[]): [number, number, numb
   cv.findContours(ikili, konturlar, hiyerarsi, cv.RETR_LIST, cv.CHAIN_APPROX_SIMPLE)
   const qrPoligon = cv.matFromArray(4, 1, cv.CV_32FC2, qrKose.flat())
   const adaylar: [number, number, number][] = []
+  let yakinKare = 0
+  let enYakinDoluluk = 0
   const bos = new cv.Mat()
   for (let i = 0; i < konturlar.size(); i++) {
     const k = konturlar.get(i)
@@ -135,7 +156,13 @@ function isaretAdaylari(cv: CV, gri: CV, qrKose: Nokta[]): [number, number, numb
       const rh = dr.size.height
       if (Math.min(rw, rh) < 1 || !(rw / rh > 0.6 && rw / rh < 1.66)) continue
       const kareDolulugu = alan / (rw * rh) // kare ≈ 0,95+, daire ≈ 0,79
-      if (!(kareDolulugu > 0.88)) continue
+      if (!(kareDolulugu > 0.88)) {
+        if (kareDolulugu > 0.85) {
+          yakinKare++
+          enYakinDoluluk = Math.max(enYakinDoluluk, kareDolulugu)
+        }
+        continue
+      }
       const r = cv.boundingRect(k)
       const ic = ikili.roi(r)
       const maske = cv.Mat.zeros(r.height, r.width, cv.CV_8UC1)
@@ -157,21 +184,31 @@ function isaretAdaylari(cv: CV, gri: CV, qrKose: Nokta[]): [number, number, numb
   hiyerarsi.delete()
   qrPoligon.delete()
   bos.delete()
-  if (!adaylar.length) return adaylar
+  if (!adaylar.length) return { adaylar, yakinKare, enYakinDoluluk, kucukElenen: 0 }
   // En büyük işaretlerin %45'inden küçükler elenir.
   const alanlar = adaylar.map((a) => a[2]).sort((a, b) => a - b)
   const esik = 0.45 * alanlar[alanlar.length - Math.min(4, alanlar.length)]
-  return adaylar.filter((a) => a[2] >= esik)
+  const kalan = adaylar.filter((a) => a[2] >= esik)
+  return { adaylar: kalan, yakinKare, enYakinDoluluk, kucukElenen: adaylar.length - kalan.length }
 }
 
 // Fotoğraftaki formu düzeltir. Dönen Mat'ı çağıran siler.
-function duzelt(cv: CV, gri: CV, qr: QrBilgisi, SABLON: Sablon): CV {
+function duzelt(cv: CV, gri: CV, qr: QrBilgisi, SABLON: Sablon, tani: string[]): CV {
   const ka = SABLON.qr.kod_alani
   const qrMerkezSablon: Nokta = [ka.x + ka.kenar / 2, ka.y + ka.kenar / 2]
   const m = SABLON.isaret_merkezleri
   const hedefMm: Nokta[] = [m.sol_ust, m.sag_ust, m.sol_alt, m.sag_alt]
-  let adaylar = isaretAdaylari(cv, gri, qr.kose)
-  if (adaylar.length < 4) throw new OkumaHatasi('Köşe işaretleri bulunamadı: formun dört köşesi de kadrajda olmalı.')
+  const tarama = isaretAdaylari(cv, gri, qr.kose)
+  let adaylar = tarama.adaylar
+  tani.push(`Köşe işareti adayı: ${adaylar.length}${tarama.kucukElenen ? ` (${tarama.kucukElenen} küçük aday elendi)` : ''}`)
+  if (tarama.yakinKare)
+    tani.push(`Kare eşiğine (0,88) takılan: ${tarama.yakinKare}, en yüksek doluluk ${sayi(tarama.enYakinDoluluk, 3)}`)
+  if (adaylar.length < 4)
+    throw new OkumaHatasi(
+      `Köşe işaretleri bulunamadı (${adaylar.length}/4): formun dört köşesi de kadrajda olmalı.`,
+      'kose_yok',
+      tani,
+    )
   const qrMerkez = ortalama(qr.kose)
   if (adaylar.length > 14)
     adaylar = adaylar
@@ -205,8 +242,14 @@ function duzelt(cv: CV, gri: CV, qr: QrBilgisi, SABLON: Sablon): CV {
       enHata = hata
     }
   }
-  if (!enIyi || enHata > 4.0)
-    throw new OkumaHatasi('Form doğrulanamadı: köşe işaretleri ile QR uyuşmuyor. Formun dört köşesi kadrajda olmalı.')
+  if (!enIyi || enHata > 4.0) {
+    tani.push(enIyi ? `En iyi dörtlüde QR sapması ${sayi(enHata)} mm (sınır 4 mm)` : 'Adaylardan dikdörtgen oluşturan dörtlü çıkmadı')
+    throw new OkumaHatasi(
+      'Form hizalanamadı: köşe işaretleri ile QR uyuşmuyor. Formun dört köşesi kadrajda olmalı.',
+      'kose_uyusmuyor',
+      tani,
+    )
+  }
 
   const H = perspektif(enIyi, hedefMm.map(([x, y]) => [x * OLCEK, y * OLCEK] as Nokta))
   const Hm = cv.matFromArray(3, 3, cv.CV_64F, H)
@@ -274,16 +317,23 @@ function sec(d: number[]): Secim {
 // --- Ana işlev ---
 
 export function oku(cv: CV, griTam: CV, verilenQr: QrBilgisi | null): OkumaSonucu {
+  const tani = [`Görüntü: ${griTam.cols}×${griTam.rows}`]
   let qr = verilenQr ?? qrBul(cv, griTam)
-  if (!qr) throw new OkumaHatasi('QR okunamadı: formu düz ve net çekin, QR görünür olsun.')
+  if (!qr) throw new OkumaHatasi('QR okunamadı: formu düz ve net çekin, QR görünür olsun.', 'qr_yok', tani)
+  tani.push(`QR: "${qr.metin}"${verilenQr ? ' (canlı görüntüde bulundu)' : ''}`)
   const icerik = qrCoz(qr.metin)
-  if (!icerik) throw new OkumaHatasi(`Bu QR platformun formuna ait değil: "${qr.metin}".`)
+  if (!icerik) throw new OkumaHatasi(`Bu QR platformun formuna ait değil: "${qr.metin}".`, 'qr_yabanci', tani)
   const SABLON = SABLONLAR[icerik.sablonSurumu]
   if (!SABLON)
-    throw new OkumaHatasi(`Bu form, uygulamanın tanımadığı optik şablon v${icerik.sablonSurumu} ile basılmış. Uygulamanın güncellenmesi gerekiyor.`)
+    throw new OkumaHatasi(
+      `Bu form, uygulamanın tanımadığı optik şablon v${icerik.sablonSurumu} ile basılmış. Uygulamanın güncellenmesi gerekiyor.`,
+      'sablon_yok',
+      tani,
+    )
 
   // QR boyutundan ölçek: ~10 px/mm'den büyükse küçült.
   const pxmm = uzaklik(qr.kose[0], qr.kose[1]) / SABLON.qr.kod_alani.kenar
+  tani.push(`Şablon v${icerik.sablonSurumu}, ölçek ${sayi(pxmm)} px/mm`)
   let gri = griTam
   if (pxmm > HEDEF_PXMM * 1.05) {
     const k = HEDEF_PXMM / pxmm
@@ -296,7 +346,7 @@ export function oku(cv: CV, griTam: CV, verilenQr: QrBilgisi | null): OkumaSonuc
 
   let duz: CV
   try {
-    duz = duzelt(cv, gri, qr, SABLON)
+    duz = duzelt(cv, gri, qr, SABLON, tani)
   } finally {
     if (gri !== griTam) gri.delete()
   }

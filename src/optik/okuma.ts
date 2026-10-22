@@ -1,6 +1,6 @@
 // Ana iş parçacığı tarafı: Worker'ı başlatır, kareyi gönderir, sonucu bekler.
 import type { IsIstegi, IsYaniti } from './isci.ts'
-import type { OkumaSonucu, QrBilgisi } from './okuyucu.ts'
+import { OkumaHatasi, type OkumaSonucu, type QrBilgisi } from './okuyucu.ts'
 
 let isci: Worker | null = null
 let sayac = 0
@@ -18,7 +18,7 @@ function isciAl(): Worker {
     if (!b) return
     bekleyenler.delete(y.id)
     if (y.tamam) b.coz(y.sonuc)
-    else b.reddet(new Error(y.hata))
+    else b.reddet(new OkumaHatasi(y.hata, y.asama, y.ayrinti))
   }
   isci.onerror = (e) => {
     for (const b of bekleyenler.values()) b.reddet(new Error(`Okuyucu başlatılamadı: ${e.message}`))

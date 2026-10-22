@@ -4,12 +4,12 @@
 // yüklenir. Paket dışarıya gerçek bir Promise veriyor; yayın derlemesinin CommonJS dönüştürmesi bunu sahte bir
 // Promise'e çeviriyor ve tarayıcı "Promise.prototype.then called on incompatible receiver" hatası veriyordu.
 import cvAdresi from '@techstark/opencv-js/dist/opencv.js?url'
-import { oku, OkumaHatasi, type QrBilgisi } from './okuyucu.ts'
+import { oku, OkumaHatasi, type Asama, type QrBilgisi } from './okuyucu.ts'
 
 export type IsIstegi = { id: number; gen: number; yuk: number; rgba: ArrayBuffer; qr: QrBilgisi | null }
 export type IsYaniti =
   | { id: number; tamam: true; sonuc: ReturnType<typeof oku> }
-  | { id: number; tamam: false; hata: string; beklenmedik?: boolean }
+  | { id: number; tamam: false; hata: string; asama: Asama; ayrinti: string[] }
   | { id: -1; hazir: true }
   | { id: -1; hazir: false; hata: string }
 
@@ -50,7 +50,7 @@ kapsam.onmessage = async (e: MessageEvent<IsIstegi | 'hazirla'>) => {
     cv = (await cvYukle()).cv
   } catch (h) {
     cvSozu = null
-    kapsam.postMessage({ id, tamam: false, hata: `Okuyucu yüklenemedi: ${String((h as Error)?.message ?? h)}`, beklenmedik: true })
+    kapsam.postMessage({ id, tamam: false, hata: `Okuyucu yüklenemedi: ${String((h as Error)?.message ?? h)}`, asama: 'beklenmedik', ayrinti: [] })
     return
   }
   const renkli = new cv.Mat(yuk, gen, cv.CV_8UC4)
@@ -62,8 +62,8 @@ kapsam.onmessage = async (e: MessageEvent<IsIstegi | 'hazirla'>) => {
     const sonuc = oku(cv, gri, qr)
     kapsam.postMessage({ id, tamam: true, sonuc }, [sonuc.duz.veri.buffer])
   } catch (hata) {
-    if (hata instanceof OkumaHatasi) kapsam.postMessage({ id, tamam: false, hata: hata.message })
-    else kapsam.postMessage({ id, tamam: false, hata: `Beklenmeyen okuma hatası: ${String(hata)}`, beklenmedik: true })
+    if (hata instanceof OkumaHatasi) kapsam.postMessage({ id, tamam: false, hata: hata.message, asama: hata.asama, ayrinti: hata.ayrinti })
+    else kapsam.postMessage({ id, tamam: false, hata: `Beklenmeyen okuma hatası: ${String(hata)}`, asama: 'beklenmedik', ayrinti: [] })
   } finally {
     gri.delete()
   }

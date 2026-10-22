@@ -2,14 +2,15 @@
 
 ## Bekleyenler
 
-- [ ] **Cevap ekranında sınıf adı:** veritabanı fonksiyonu güncellendi (2026-10-22); istemci yayına alınıp telefonda denenecek.
 - [ ] **Sonraya:** cevap taslağını sunucuda saklama (cihaz değiştirince devam), Google hesabı olmayan öğrenciler için PIN yedeği.
-- [ ] **Deneme 5 formunu telefonda yeniden okut:** şablon v2 desteği yayında (2026-10-14). Daha önce "QR platformun formuna ait değil: 8-D05|1|2" hatası veren formlar yeniden denenecek.
+- [ ] **Deneme 5 formunu telefonda yeniden okut:** şablon v2 desteği yayında (2026-10-14). Daha önce "QR platformun formuna ait değil: 8-D05|1|2" hatası veren formlar yeniden denenecek. Okunmazsa kamera ekranındaki adım listesi ve tanı satırları (ya da indirilen fotoğraf) incelenecek.
 - [ ] **Optik okumayı daha çok gerçek formla dene:** ilk gerçek okuma 2026-10-06'da çalıştı. Deneme_0N_Optik.pdf yazdırılıp kurşun kalemle doldurulacak, Android Chrome'da okutulacak. Ret oranı yüksekse köşe işareti "kare dolululuğu" eşiği (0,88) gerçek fotoğraflarla gözden geçirilecek (üretilmiş testte 0,876 çıkan bir köşe yüzünden ret oldu).
 - [ ] **Soru üretim tarafına bildir:** referans okuyucu (`optik_oku_ornek.py`) koyu zeminde çekilen fotoğrafta köşe işaretlerini bulamıyor (`RETR_EXTERNAL` → `RETR_LIST`) ve form ~13 px/mm'den büyük görününce eşik penceresi yetmiyor. Platform sürümünde ikisi düzeltildi.
 
 ## Tamamlananlar
 
+- [x] Optik okumada ret nedeni: kamera ekranı takılan adımı (QR bulundu / tanındı / köşe işaretleri / hizalama) ve tanı satırlarını gösteriyor (aday sayısı, 0,88 eşiğine takılanlar, ölçek, QR sapması); oturum özeti ve indirilen dosya adında aşama var. Üretilmiş testte sonuç değişmedi (18 doğru, 2 ret, 0 yanlış). 2026-10-22
+- [x] Cevap ekranında sınıf adı görünüyor (ogrenci_deneme sınıf adını döndürüyor); telefonda doğrulandı. 2026-10-22
 - [x] Öğrenci girişi telefonda denendi: Google girişi, eşleştirme, cevap gönderme ve sonuç ekranı çalışıyor. 2026-10-18
 - [x] Öğrenci girişi test kayıtları silindi (eşleşme, gönderim, sonuç 73). Test hesabı tayfun.olcum@sinav.k12.tr telefon denemesi için duruyor. 2026-10-16
 - [x] Rol ayrımı: yalnızca davetli ya da onaylı başvurusu olan hesap öğretmen; cevap anahtarı yalnızca öğretmene açık. 2026-10-16

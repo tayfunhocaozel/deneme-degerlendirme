@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { fener, kameraAc, kameraKapat, kareYakala, netlik, qrAra, yerlesikQrVar, type Kamera } from './kamera.ts'
 import { formuOku, okuyucuyuHazirla } from './okuma.ts'
-import type { OkumaSonucu, QrBilgisi } from './okuyucu.ts'
+import { OkumaHatasi, type Asama, type OkumaSonucu, type QrBilgisi } from './okuyucu.ts'
 import { qrCoz, SABLONLAR } from './sablon.ts'
 
 const ARALIK_MS = 180
@@ -15,6 +15,29 @@ const KACIRMA_TOLERANSI = 2 // QR bir iki karede kaçırılırsa geçmiş sıfı
 const EN_COK_BEKLEME_MS = 2000 // QR bu kadar süre görünür kalırsa koşullar sağlanmasa da çek
 
 type Durum = { metin: string; tur: 'bilgi' | 'iyi' | 'uyari' | 'hata' }
+type Ret = { asama: Asama; ayrinti: string[] }
+
+// Okumanın adımları; ret olunca takıldığı adım işaretlenir.
+const ADIMLAR = ['QR bulundu', 'QR tanındı', 'Köşe işaretleri bulundu', 'Form hizalandı', 'Cevaplar okundu']
+const ADIM_SIRASI: Record<Asama, number> = {
+  qr_yok: 0,
+  qr_yabanci: 1,
+  sablon_yok: 1,
+  kose_yok: 2,
+  kose_uyusmuyor: 3,
+  beklenmedik: 4,
+}
+const ADIM_ADI: Record<Asama, string> = {
+  qr_yok: 'QR',
+  qr_yabanci: 'yabancı QR',
+  sablon_yok: 'şablon',
+  kose_yok: 'köşe işaretleri',
+  kose_uyusmuyor: 'hizalama',
+  beklenmedik: 'beklenmeyen hata',
+}
+
+// Bu sayfa açık kaldığı sürece yapılan okumaların özeti (kamera ekranı her formdan sonra yeniden açılır).
+const oturum = { okunan: 0, retler: {} as Partial<Record<Asama, number>> }
 type OkuyucuDurumu = { ad: 'yukleniyor'; baslangic: number } | { ad: 'hazir'; sure: number } | { ad: 'hata'; mesaj: string }
 
 // Kamera önizlemesi, otomatik yakalama ve deklanşör. Okuma başarılı olunca `okundu` çağrılır.
@@ -35,6 +58,7 @@ export default function KameraEkrani({ okundu }: { okundu: (s: OkumaSonucu) => v
   const [, setTik] = useState(0) // yükleme süresini saniye saniye göstermek için
   const [kameraHatasi, setKameraHatasi] = useState('')
   const [indirilebilir, setIndirilebilir] = useState(false)
+  const [ret, setRet] = useState<Ret | null>(null)
   // Döngü, okuyucunun hazır olup olmadığını güncel okusun diye.
   const okuyucuHazir = useRef(false)
   okuyucuHazir.current = okuyucu.ad === 'hazir'
@@ -58,6 +82,7 @@ export default function KameraEkrani({ okundu }: { okundu: (s: OkumaSonucu) => v
     isleniyor.current = true
     setOkuyor(true)
     setIndirilebilir(false)
+    setRet(null)
     setDurum({ metin: okuyucuHazir.current ? 'Form okunuyor…' : 'Okuyucu yükleniyor; yüklenince form okunacak…', tur: 'bilgi' })
     try {
       const kare = kareYakala(video.current)
@@ -65,8 +90,14 @@ export default function KameraEkrani({ okundu }: { okundu: (s: OkumaSonucu) => v
       sonKare.current = new ImageData(new Uint8ClampedArray(kare.data), kare.width, kare.height)
       const sonuc = await formuOku(kare, qr)
       sonKare.current = null
+      oturum.okunan++
       okundu(sonuc)
     } catch (h) {
+      const yeniRet: Ret =
+        h instanceof OkumaHatasi ? { asama: h.asama, ayrinti: h.ayrinti } : { asama: 'beklenmedik', ayrinti: [] }
+      oturum.retler[yeniRet.asama] = (oturum.retler[yeniRet.asama] ?? 0) + 1
+      console.info('[optik] okunamadı', yeniRet.asama, (h as Error).message, yeniRet.ayrinti)
+      setRet(yeniRet)
       setDurum({ metin: (h as Error).message, tur: 'hata' })
       setIndirilebilir(!!sonKare.current)
       bekleme.current = Date.now() + 3000
@@ -160,7 +191,7 @@ export default function KameraEkrani({ okundu }: { okundu: (s: OkumaSonucu) => v
         if (!b) return
         const a = document.createElement('a')
         a.href = URL.createObjectURL(b)
-        a.download = `okunamayan-form-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.jpg`
+        a.download = `okunamayan-form-${ret?.asama ?? 'bilinmiyor'}-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.jpg`
         a.click()
         setTimeout(() => URL.revokeObjectURL(a.href), 5000)
       },
@@ -234,6 +265,7 @@ export default function KameraEkrani({ okundu }: { okundu: (s: OkumaSonucu) => v
           </>
         )}
       </p>
+      {ret && <RetAyrintisi ret={ret} />}
       {indirilebilir && (
         <p className="kucuk">
           Okunamayan fotoğrafı incelemek için{' '}
@@ -248,6 +280,41 @@ export default function KameraEkrani({ okundu }: { okundu: (s: OkumaSonucu) => v
         telefonda işlenir, hiçbir yere gönderilmez.
         {yerlesik === false && ' Bu tarayıcıda otomatik yakalama yok.'}
       </p>
+      <OturumOzeti />
     </div>
+  )
+}
+
+function RetAyrintisi({ ret }: { ret: Ret }) {
+  const takilan = ADIM_SIRASI[ret.asama]
+  return (
+    <div className="kart ret-ayrinti">
+      <ol className="okuma-adimlari">
+        {ADIMLAR.map((ad, i) => (
+          <li key={ad} className={i < takilan ? 'adim-tamam' : i === takilan ? 'adim-takildi' : 'adim-bekliyor'}>
+            <span aria-hidden="true">{i < takilan ? '✓' : i === takilan ? '✗' : '·'}</span> {ad}
+          </li>
+        ))}
+      </ol>
+      {ret.ayrinti.length > 0 && (
+        <ul className="ret-tani soluk kucuk">
+          {ret.ayrinti.map((s) => (
+            <li key={s}>{s}</li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
+}
+
+function OturumOzeti() {
+  const retler = Object.entries(oturum.retler) as [Asama, number][]
+  const retSayisi = retler.reduce((t, [, n]) => t + n, 0)
+  if (!oturum.okunan && !retSayisi) return null
+  return (
+    <p className="soluk kucuk">
+      Bu oturumda {oturum.okunan} form okundu, {retSayisi} çekim okunamadı
+      {retSayisi > 0 && ` (${retler.map(([a, n]) => `${ADIM_ADI[a]} ${n}`).join(', ')})`}.
+    </p>
   )
 }

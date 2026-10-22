@@ -40,7 +40,9 @@ async function goruntuVerisi(url: string): Promise<ImageData> {
       yaz(`${ad.padEnd(22)} ${tamam ? 'DOĞRU ' : 'YANLIŞ'} ${Math.round(performance.now() - bas)}ms no=${s.ogrenciNo} (${s.noDurum}) ${cev}`)
     } catch (e) {
       ret++
-      yaz(`${ad.padEnd(22)} RET    ${Math.round(performance.now() - bas)}ms ${(e as Error).message}`)
+      const h = e as Error & { asama?: string; ayrinti?: string[] }
+      yaz(`${ad.padEnd(22)} RET    ${Math.round(performance.now() - bas)}ms [${h.asama}] ${h.message}`)
+      for (const satir of h.ayrinti ?? []) yaz(`${''.padEnd(29)}${satir}`)
     }
   }
   yaz(`SONUÇ: ${dogru} doğru, ${ret} ret, ${yanlis} yanlış`)
