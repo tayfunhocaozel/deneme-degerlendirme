@@ -67,20 +67,40 @@ export function kameraKapat(k: Kamera | null) {
 }
 
 // Kadrajdaki platform QR'larından merkeze en yakın olanı (kesilmemiş kâğıtta birden çok form olabilir).
+// Tam karede bulunamazsa görüntünün ortası büyütülerek yeniden aranır: form uzakta ya da küçükken
+// QR tam karede dedektörün çözebileceğinden küçük kalıyor.
+const ORTA_PAY = 0.6
+const BUYUTME = 2
+const ortaTuvali = typeof document !== 'undefined' ? document.createElement('canvas') : null
+
+async function kodlariBul(video: HTMLVideoElement): Promise<{ kodlar: AlgilananKod[]; donustur: (x: number, y: number) => Nokta }> {
+  const tam = await dedektor!.detect(video)
+  if (tam.some((k) => qrCoz(k.rawValue) !== null) || !ortaTuvali) return { kodlar: tam, donustur: (x, y) => [x, y] }
+  const w = Math.round(video.videoWidth * ORTA_PAY)
+  const h = Math.round(video.videoHeight * ORTA_PAY)
+  const x0 = Math.round((video.videoWidth - w) / 2)
+  const y0 = Math.round((video.videoHeight - h) / 2)
+  ortaTuvali.width = w * BUYUTME
+  ortaTuvali.height = h * BUYUTME
+  ortaTuvali.getContext('2d')!.drawImage(video, x0, y0, w, h, 0, 0, w * BUYUTME, h * BUYUTME)
+  return { kodlar: await dedektor!.detect(ortaTuvali), donustur: (x, y) => [x0 + x / BUYUTME, y0 + y / BUYUTME] }
+}
+
 export async function qrAra(video: HTMLVideoElement): Promise<QrBilgisi | null> {
-  if (!dedektor) return null
-  let kodlar: AlgilananKod[]
+  if (!dedektor || !video.videoWidth) return null
+  let bulunan: Awaited<ReturnType<typeof kodlariBul>>
   try {
-    kodlar = await dedektor.detect(video)
+    bulunan = await kodlariBul(video)
   } catch {
     return null
   }
+  const { kodlar, donustur } = bulunan
   const mx = video.videoWidth / 2
   const my = video.videoHeight / 2
   const uygun = kodlar
     .filter((k) => qrCoz(k.rawValue) !== null && k.cornerPoints.length === 4)
     .map((k) => {
-      const kose: Nokta[] = k.cornerPoints.map((p) => [p.x, p.y])
+      const kose: Nokta[] = k.cornerPoints.map((p) => donustur(p.x, p.y))
       const cx = kose.reduce((t, p) => t + p[0], 0) / 4
       const cy = kose.reduce((t, p) => t + p[1], 0) / 4
       return { qr: { metin: k.rawValue.trim(), kose }, d: Math.hypot(cx - mx, cy - my) }

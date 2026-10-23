@@ -13,6 +13,7 @@ const SABIT_ESIK = 0.12 // ardışık karelerde QR merkezinin kayması < QR kena
 const BOYUT_ESIK = 0.1
 const KACIRMA_TOLERANSI = 2 // QR bir iki karede kaçırılırsa geçmiş sıfırlanmaz
 const EN_COK_BEKLEME_MS = 2000 // QR bu kadar süre görünür kalırsa koşullar sağlanmasa da çek
+const QR_IPUCU_MS = 3000 // QR bu kadar süre bulunamazsa yaklaşma ipucu göster
 
 type Durum = { metin: string; tur: 'bilgi' | 'iyi' | 'uyari' | 'hata' }
 type Ret = { asama: Asama; ayrinti: string[] }
@@ -59,6 +60,7 @@ export default function KameraEkrani({ okundu }: { okundu: (s: OkumaSonucu) => v
   const [kameraHatasi, setKameraHatasi] = useState('')
   const [indirilebilir, setIndirilebilir] = useState(false)
   const [ret, setRet] = useState<Ret | null>(null)
+  const [cozunurluk, setCozunurluk] = useState('')
   // Döngü, okuyucunun hazır olup olmadığını güncel okusun diye.
   const okuyucuHazir = useRef(false)
   okuyucuHazir.current = okuyucu.ad === 'hazir'
@@ -113,6 +115,7 @@ export default function KameraEkrani({ okundu }: { okundu: (s: OkumaSonucu) => v
     const gecmis: { x: number; y: number; s: number; n: number }[] = []
     let kacirma = 0
     let ilkGorulme = 0
+    let qrsizBaslangic = Date.now()
     okuyucuYukle()
 
     async function dongu() {
@@ -124,10 +127,15 @@ export default function KameraEkrani({ okundu }: { okundu: (s: OkumaSonucu) => v
           if (++kacirma > KACIRMA_TOLERANSI) {
             gecmis.length = 0
             ilkGorulme = 0
-            setDurum({ metin: 'QR aranıyor… Formu çerçeveye alın.', tur: 'bilgi' })
+            setDurum(
+              Date.now() - qrsizBaslangic > QR_IPUCU_MS
+                ? { metin: 'QR bulunamıyor: telefonu forma yaklaştırın, form köşe çizgilerini doldursun.', tur: 'uyari' }
+                : { metin: 'QR aranıyor… Formu köşe çizgilerine oturtun.', tur: 'bilgi' },
+            )
           }
         } else {
           kacirma = 0
+          qrsizBaslangic = Date.now()
           if (!ilkGorulme) ilkGorulme = Date.now()
           const s = Math.hypot(qr.kose[1][0] - qr.kose[0][0], qr.kose[1][1] - qr.kose[0][1])
           const x = qr.kose.reduce((t, p) => t + p[0], 0) / 4
@@ -162,6 +170,7 @@ export default function KameraEkrani({ okundu }: { okundu: (s: OkumaSonucu) => v
         kamera.current = await kameraAc(video.current!)
         if (iptal) return kameraKapat(kamera.current)
         setFenerVar(kamera.current.fenerVar)
+        setCozunurluk(`${video.current!.videoWidth}×${video.current!.videoHeight}`)
         setKameraHazir(true)
         if (yer) dongu()
         else setDurum({ metin: 'Formu çerçeveye alıp “Çek”e basın.', tur: 'bilgi' })
@@ -256,6 +265,7 @@ export default function KameraEkrani({ okundu }: { okundu: (s: OkumaSonucu) => v
 
       <p className={`okuyucu-durumu ${okuyucu.ad === 'hata' ? 'hata' : 'soluk kucuk'}`}>
         {okuyucuMetni}
+        {cozunurluk && ` · kamera ${cozunurluk}`}
         {okuyucu.ad === 'hata' && (
           <>
             {' '}
@@ -276,7 +286,7 @@ export default function KameraEkrani({ okundu }: { okundu: (s: OkumaSonucu) => v
         </p>
       )}
       <p className="soluk kucuk">
-        Formun dört köşesindeki siyah kareler ve QR kod kadrajda olsun. Otomatik çekmezse “Çek”e basın. Fotoğraf yalnızca bu
+        Formu, dört köşesindeki siyah kareler beyaz köşe çizgilerine gelecek kadar yaklaştırın; QR kod da kadrajda olsun. Otomatik çekmezse “Çek”e basın. Fotoğraf yalnızca bu
         telefonda işlenir, hiçbir yere gönderilmez.
         {yerlesik === false && ' Bu tarayıcıda otomatik yakalama yok.'}
       </p>
